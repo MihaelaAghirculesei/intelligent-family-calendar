@@ -139,6 +139,21 @@ h1 {
     height: 25px;
 }
 
+@media (max-width: 768px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .schedule-table {
+        font-size: 7px;
+    }
+    
+    .schedule-table th,
+    .schedule-table td {
+        padding: 1px;
+    }
+}
+
 @media print {
     body {
         -webkit-print-color-adjust: exact;
