@@ -16,11 +16,37 @@ body {
     max-width: 180mm;
 }
 
+.header-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+}
+
 h1 {
-    text-align: center;
     color: #333;
-    margin: 0 0 10px 0;
+    margin: 0;
     font-size: 18px;
+    text-align: center;
+    flex: 1;
+}
+
+.export-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    position: absolute;
+    right: 0;
+}
+
+.export-btn:hover {
+    background-color: #5a6268;
 }
 
 .legend {
@@ -158,6 +184,14 @@ h1 {
     body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+    
+    .export-btn {
+        display: none;
+    }
+    
+    .header-row {
+        justify-content: center;
     }
     
     .schedule-table {
