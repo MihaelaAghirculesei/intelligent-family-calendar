@@ -226,6 +226,11 @@
                 </tr>
             </tbody>
         </table>
+        
+        <div class="bottom-controls">
+            <button id="undoBtn" class="control-btn" disabled title="Annulla (Ctrl+Z)">↶ Annulla</button>
+            <button id="redoBtn" class="control-btn" disabled title="Ripeti (Ctrl+Y)">↷ Ripeti</button>
+        </div>
     </div>
 
     <script>
@@ -253,6 +258,103 @@
 
         // Drag & Drop functionality
         let draggedElement = null;
+        
+        // Undo/Redo system
+        let actionHistory = [];
+        let currentHistoryIndex = -1;
+        const maxHistorySize = 50;
+
+        // Function to save action to history
+        function saveAction(action) {
+            // Remove any actions after current index (when user does new action after undo)
+            actionHistory = actionHistory.slice(0, currentHistoryIndex + 1);
+            
+            // Add new action
+            actionHistory.push(action);
+            currentHistoryIndex++;
+            
+            // Limit history size
+            if (actionHistory.length > maxHistorySize) {
+                actionHistory.shift();
+                currentHistoryIndex--;
+            }
+            
+            updateUndoRedoButtons();
+        }
+
+        // Function to update button states
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+            
+            undoBtn.disabled = currentHistoryIndex < 0;
+            redoBtn.disabled = currentHistoryIndex >= actionHistory.length - 1;
+        }
+
+        // Function to perform undo
+        function performUndo() {
+            if (currentHistoryIndex < 0) return;
+            
+            const action = actionHistory[currentHistoryIndex];
+            
+            // Find the moved element and restore it to original position
+            const movedElement = document.querySelector(`[data-activity="${action.activityId}"]`);
+            if (movedElement && action.originalParent) {
+                const originalCell = findCellByPosition(action.originalParent);
+                if (originalCell) {
+                    const newElement = movedElement.cloneNode(true);
+                    newElement.removeAttribute('style');
+                    movedElement.remove();
+                    originalCell.appendChild(newElement);
+                    addDragListeners(newElement);
+                }
+            }
+            
+            currentHistoryIndex--;
+            updateUndoRedoButtons();
+        }
+
+        // Function to perform redo
+        function performRedo() {
+            if (currentHistoryIndex >= actionHistory.length - 1) return;
+            
+            currentHistoryIndex++;
+            const action = actionHistory[currentHistoryIndex];
+            
+            // Find the element and move it to new position
+            const element = document.querySelector(`[data-activity="${action.activityId}"]`);
+            if (element && action.newParent) {
+                const newCell = findCellByPosition(action.newParent);
+                if (newCell) {
+                    const newElement = element.cloneNode(true);
+                    newElement.removeAttribute('style');
+                    element.remove();
+                    newCell.appendChild(newElement);
+                    addDragListeners(newElement);
+                }
+            }
+            
+            updateUndoRedoButtons();
+        }
+
+        // Helper function to find cell by position
+        function findCellByPosition(position) {
+            const rows = document.querySelectorAll('tbody tr');
+            if (rows[position.row] && rows[position.row].cells[position.col]) {
+                return rows[position.row].cells[position.col];
+            }
+            return null;
+        }
+
+        // Helper function to get cell position
+        function getCellPosition(cell) {
+            const row = cell.parentNode;
+            const tbody = row.parentNode;
+            return {
+                row: Array.from(tbody.children).indexOf(row),
+                col: Array.from(row.children).indexOf(cell)
+            };
+        }
 
         // Function to add drag listeners to an element
         function addDragListeners(activity) {
@@ -271,6 +373,26 @@
 
         // Add drag event listeners to all draggable activities
         document.querySelectorAll('.draggable-activity').forEach(addDragListeners);
+
+        // Add click listeners for undo/redo buttons
+        document.getElementById('undoBtn').addEventListener('click', performUndo);
+        document.getElementById('redoBtn').addEventListener('click', performRedo);
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    performUndo();
+                } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+                    e.preventDefault();
+                    performRedo();
+                }
+            }
+        });
+
+        // Initialize button states
+        updateUndoRedoButtons();
 
         // Add drop event listeners to all table cells
         document.querySelectorAll('td').forEach(cell => {
@@ -303,6 +425,18 @@
                             return;
                         }
                     }
+
+                    // Save action to history BEFORE making changes
+                    const originalParent = getCellPosition(draggedElement.parentNode);
+                    const newParent = getCellPosition(this);
+                    const activityId = draggedElement.dataset.activity;
+                    
+                    saveAction({
+                        type: 'move',
+                        activityId: activityId,
+                        originalParent: originalParent,
+                        newParent: newParent
+                    });
 
                     // Create a clean clone of the original element
                     const newElement = draggedElement.cloneNode(true);
