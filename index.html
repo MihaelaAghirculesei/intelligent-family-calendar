@@ -65,7 +65,7 @@
                                 SCUOLA<br>7:45-13:10
                             </div>
                         </div>
-                        <div class="activity leo">Chitarra<br>13:45-15:30</div>
+                        <div class="activity leo draggable-activity" draggable="true" data-activity="chitarra">Chitarra<br>13:45-15:30</div>
                     </td>
                     <td>
                         <div class="school-leo">
@@ -182,9 +182,9 @@
                     <td class="time-col">15:30-17:30</td>
                     <td></td>
                     <td></td>
-                    <td><div class="activity mia">Danza<br>15:45-17:30<br>(se possibile)</div></td>
-                    <td><div class="activity leo">Batteria<br>15:30-17:00</div></td>
-                    <td><div class="activity mia">Danza<br>15:45-17:30</div></td>
+                    <td><div class="activity mia draggable-activity" draggable="true" data-activity="danza-mer">Danza<br>15:45-17:30<br>(se possibile)</div></td>
+                    <td><div class="activity leo draggable-activity" draggable="true" data-activity="batteria">Batteria<br>15:30-17:00</div></td>
+                    <td><div class="activity mia draggable-activity" draggable="true" data-activity="danza-ven">Danza<br>15:45-17:30</div></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -192,14 +192,14 @@
                     <td class="time-col">16:35-18:30</td>
                     <td></td>
                     <td>
-                        <div class="activity mia">Danza<br>15:45-17:30</div>
-                        <div class="activity anna">Basket<br>17:15-18:30</div>
+                        <div class="activity mia draggable-activity" draggable="true" data-activity="danza-mart">Danza<br>15:45-17:30</div>
+                        <div class="activity anna draggable-activity" draggable="true" data-activity="basket">Basket<br>17:15-18:30</div>
                     </td>
                     <td>
-                        <div class="activity leo">Piano<br>17:00-18:00</div>
-                        <div class="activity mia">Flauto Solo<br>17:30-18:15</div>
+                        <div class="activity leo draggable-activity" draggable="true" data-activity="piano">Piano<br>17:00-18:00</div>
+                        <div class="activity mia draggable-activity" draggable="true" data-activity="flauto-solo">Flauto Solo<br>17:30-18:15</div>
                     </td>
-                    <td><div class="activity mia">Flauto Gruppo<br>16:35-17:35</div></td>
+                    <td><div class="activity mia draggable-activity" draggable="true" data-activity="flauto-gruppo">Flauto Gruppo<br>16:35-17:35</div></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -210,14 +210,14 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td><div class="activity leo">Scout<br>17:15-19:15</div></td>
+                    <td><div class="activity leo draggable-activity" draggable="true" data-activity="scout">Scout<br>17:15-19:15</div></td>
                     <td></td>
                     <td></td>
                 </tr>
                 <tr class="regular-row">
                     <td class="time-col">19:00-21:30</td>
-                    <td><div class="activity mia">Piscina<br>19:00-20:00</div></td>
-                    <td><div class="activity leo">Piscina<br>20:00-21:30</div></td>
+                    <td><div class="activity mia draggable-activity" draggable="true" data-activity="piscina-mia">Piscina<br>19:00-20:00</div></td>
+                    <td><div class="activity leo draggable-activity" draggable="true" data-activity="piscina-leo">Piscina<br>20:00-21:30</div></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -229,6 +229,7 @@
     </div>
 
     <script>
+        // PDF Export functionality
         document.getElementById('exportPdfBtn').addEventListener('click', function() {
             const element = document.querySelector('.container');
             const opt = {
@@ -248,6 +249,83 @@
             };
             
             html2pdf().set(opt).from(element).save();
+        });
+
+        // Drag & Drop functionality
+        let draggedElement = null;
+
+        // Function to add drag listeners to an element
+        function addDragListeners(activity) {
+            activity.addEventListener('dragstart', function(e) {
+                draggedElement = this;
+                this.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.outerHTML);
+            });
+
+            activity.addEventListener('dragend', function(e) {
+                this.style.opacity = '1';
+                draggedElement = null;
+            });
+        }
+
+        // Add drag event listeners to all draggable activities
+        document.querySelectorAll('.draggable-activity').forEach(addDragListeners);
+
+        // Add drop event listeners to all table cells
+        document.querySelectorAll('td').forEach(cell => {
+            cell.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('drag-over');
+            });
+
+            cell.addEventListener('dragleave', function(e) {
+                this.classList.remove('drag-over');
+            });
+
+            cell.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                
+                // Don't allow dropping on time column or cells with school activities
+                if (this.classList.contains('time-col') || this.querySelector('.school-leo, .school-anna-mia')) {
+                    return;
+                }
+
+                if (draggedElement) {
+                    // Check for conflicts - warn if cell already has activities
+                    const existingActivities = this.querySelectorAll('.draggable-activity');
+                    if (existingActivities.length > 0) {
+                        const proceed = confirm('Questa cella contiene già delle attività. Vuoi comunque spostare qui l\'attività?');
+                        if (!proceed) {
+                            draggedElement.style.opacity = '1';
+                            return;
+                        }
+                    }
+
+                    // Create a clean clone of the original element
+                    const newElement = draggedElement.cloneNode(true);
+                    
+                    // Remove ALL style attributes from the clone
+                    newElement.removeAttribute('style');
+                    
+                    // Remove original element
+                    draggedElement.remove();
+                    
+                    // Add clean clone to new location
+                    this.appendChild(newElement);
+                    
+                    // Re-add event listeners to the new element
+                    addDragListeners(newElement);
+                    
+                    // Add a subtle animation to show the move
+                    newElement.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        newElement.style.transform = '';
+                    }, 200);
+                }
+            });
         });
     </script>
 </body>

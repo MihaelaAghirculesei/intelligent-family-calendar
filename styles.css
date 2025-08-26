@@ -134,6 +134,26 @@ h1 {
     background-color: #4CAF50; 
 }
 
+.draggable-activity {
+    cursor: move;
+    transition: opacity 0.3s ease, transform 0.2s ease;
+    box-sizing: border-box;
+    display: block;
+    width: auto;
+    height: auto;
+}
+
+.draggable-activity:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.drag-over {
+    background-color: #e3f2fd !important;
+    border: 2px dashed #2196F3 !important;
+}
+
+
 .school-leo,
 .school-anna-mia {
     background-color: #FFD700 !important;
