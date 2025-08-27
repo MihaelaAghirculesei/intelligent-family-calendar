@@ -46,7 +46,6 @@ export class CalendarComponent implements OnInit {
   }
 
   getSchoolTime(timeSlot: string, day: WeekDay): string {
-    // Logic to determine school end time based on day and slot
     if (timeSlot === '7:45-13:10') return '7:45-13:10';
     if (timeSlot === '8:15-14:00' && day === 'friday') return '8:15-14:00';
     if (timeSlot === '14:00-15:00') return '8:15-15:00';

@@ -30,7 +30,6 @@ export class CalendarService {
 
     const cells = new Map<string, CalendarCell>();
     
-    // Initialize all cells
     timeSlots.forEach(timeSlot => {
       weekDays.forEach(day => {
         const key = `${timeSlot}-${day}`;
@@ -59,7 +58,6 @@ export class CalendarService {
   private getSchoolPersons(timeSlot: string, day: WeekDay): Person[] {
     if (!this.isSchoolTime(timeSlot, day)) return [];
     
-    // Logic for who has school when
     if (timeSlot === '7:45-13:10') return ['leo'];
     if (timeSlot === '8:15-14:00' && day === 'friday') return ['anna'];
     if (timeSlot === '14:00-15:00' && (day === 'tuesday' || day === 'thursday')) return ['anna', 'mia'];
@@ -70,24 +68,7 @@ export class CalendarService {
   }
 
   private loadInitialData(): void {
-    // Load the initial activities from the original calendar
-    const initialActivities: Activity[] = [
-      { id: 'chitarra', name: 'Chitarra\n13:45-15:30', person: 'leo', timeRange: '15:30-17:30' },
-      { id: 'danza-mer', name: 'Danza\n15:45-17:30\n(se possibile)', person: 'mia', timeRange: '15:30-17:30' },
-      { id: 'batteria', name: 'Batteria\n15:30-17:00', person: 'leo', timeRange: '15:30-17:30' },
-      { id: 'danza-ven', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '15:30-17:30' },
-      { id: 'danza-mart', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '16:35-18:30' },
-      { id: 'basket', name: 'Basket\n17:15-18:30', person: 'anna', timeRange: '16:35-18:30' },
-      { id: 'piano', name: 'Piano\n17:00-18:00', person: 'leo', timeRange: '16:35-18:30' },
-      { id: 'flauto-solo', name: 'Flauto Solo\n17:30-18:15', person: 'mia', timeRange: '16:35-18:30' },
-      { id: 'flauto-gruppo', name: 'Flauto Gruppo\n16:35-17:35', person: 'mia', timeRange: '16:35-18:30' },
-      { id: 'scout', name: 'Scout\n17:15-19:15', person: 'leo', timeRange: '17:15-19:15' },
-      { id: 'piscina-mia', name: 'Piscina\n19:00-20:00', person: 'mia', timeRange: '19:00-21:30' },
-      { id: 'piscina-leo', name: 'Piscina\n20:00-21:30', person: 'leo', timeRange: '19:00-21:30' }
-    ];
-
-    // Place activities in their initial positions
-    this.placeActivity('chitarra', '15:30-17:30', 'wednesday');
+    this.placeActivity('chitarra', '7:45-13:10', 'wednesday');
     this.placeActivity('danza-mer', '15:30-17:30', 'wednesday');
     this.placeActivity('batteria', '15:30-17:30', 'thursday');
     this.placeActivity('danza-ven', '15:30-17:30', 'friday');
@@ -99,6 +80,7 @@ export class CalendarService {
     this.placeActivity('scout', '17:15-19:15', 'friday');
     this.placeActivity('piscina-mia', '19:00-21:30', 'monday');
     this.placeActivity('piscina-leo', '19:00-21:30', 'tuesday');
+    this.calendarSubject.next(this.calendarData);
   }
 
   private placeActivity(activityId: string, timeSlot: string, day: WeekDay): void {
@@ -115,18 +97,18 @@ export class CalendarService {
 
   private findActivityById(id: string): Activity | undefined {
     const activityMap: Record<string, Activity> = {
-      'chitarra': { id: 'chitarra', name: 'Chitarra\n13:45-15:30', person: 'leo', timeRange: '15:30-17:30' },
-      'danza-mer': { id: 'danza-mer', name: 'Danza\n15:45-17:30\n(se possibile)', person: 'mia', timeRange: '15:30-17:30' },
-      'batteria': { id: 'batteria', name: 'Batteria\n15:30-17:00', person: 'leo', timeRange: '15:30-17:30' },
-      'danza-ven': { id: 'danza-ven', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '15:30-17:30' },
-      'danza-mart': { id: 'danza-mart', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '16:35-18:30' },
-      'basket': { id: 'basket', name: 'Basket\n17:15-18:30', person: 'anna', timeRange: '16:35-18:30' },
-      'piano': { id: 'piano', name: 'Piano\n17:00-18:00', person: 'leo', timeRange: '16:35-18:30' },
-      'flauto-solo': { id: 'flauto-solo', name: 'Flauto Solo\n17:30-18:15', person: 'mia', timeRange: '16:35-18:30' },
-      'flauto-gruppo': { id: 'flauto-gruppo', name: 'Flauto Gruppo\n16:35-17:35', person: 'mia', timeRange: '16:35-18:30' },
-      'scout': { id: 'scout', name: 'Scout\n17:15-19:15', person: 'leo', timeRange: '17:15-19:15' },
-      'piscina-mia': { id: 'piscina-mia', name: 'Piscina\n19:00-20:00', person: 'mia', timeRange: '19:00-21:30' },
-      'piscina-leo': { id: 'piscina-leo', name: 'Piscina\n20:00-21:30', person: 'leo', timeRange: '19:00-21:30' }
+      'chitarra': { id: 'chitarra', name: 'Chitarra', person: 'leo', timeRange: '13:45-15:30' },
+      'danza-mer': { id: 'danza-mer', name: 'Danza (se possibile)', person: 'mia', timeRange: '15:45-17:30' },
+      'batteria': { id: 'batteria', name: 'Batteria', person: 'leo', timeRange: '15:30-17:00' },
+      'danza-ven': { id: 'danza-ven', name: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
+      'danza-mart': { id: 'danza-mart', name: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
+      'basket': { id: 'basket', name: 'Basket', person: 'anna', timeRange: '17:15-18:30' },
+      'piano': { id: 'piano', name: 'Piano', person: 'leo', timeRange: '17:00-18:00' },
+      'flauto-solo': { id: 'flauto-solo', name: 'Flauto Solo', person: 'mia', timeRange: '17:30-18:15' },
+      'flauto-gruppo': { id: 'flauto-gruppo', name: 'Flauto Gruppo', person: 'mia', timeRange: '16:35-17:35' },
+      'scout': { id: 'scout', name: 'Scout', person: 'leo', timeRange: '17:15-19:15' },
+      'piscina-mia': { id: 'piscina-mia', name: 'Piscina', person: 'mia', timeRange: '19:00-20:00' },
+      'piscina-leo': { id: 'piscina-leo', name: 'Piscina', person: 'leo', timeRange: '20:00-21:30' }
     };
     
     return activityMap[id];
