@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="calendarData$ | async as calendarData">
   <div class="header-row">
     <h1>Orario Settimanale Famiglia</h1>
     <button class="export-btn">📄 Esporta PDF</button>
@@ -10,7 +10,53 @@
     <div class="legend-item leo">Leo</div>
   </div>
   
-  <p>Calendar implementation in progress...</p>
+  <table class="schedule-table">
+    <thead>
+      <tr>
+        <th>Orario</th>
+        <th *ngFor="let label of weekDayLabels">{{ label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let timeSlot of timeSlots" 
+          [class]="timeSlot === '7:45-13:10' ? 'compact-row' : 'regular-row'">
+        <td class="time-col">{{ timeSlot }}</td>
+        
+        <td *ngFor="let day of weekDays; let dayIndex = index"
+            [attr.data-timeslot]="timeSlot"
+            [attr.data-day]="day">
+          
+          <ng-container *ngIf="getCell(calendarData, timeSlot, day) as cell">
+            <!-- School time display -->
+            <div *ngIf="cell.isSchoolTime && cell.schoolPerson && cell.schoolPerson.length > 0" 
+                 [class]="cell.schoolPerson.includes('leo') ? 'school-leo' : 'school-anna-mia'">
+              <div class="name-line">
+                <ng-container *ngFor="let person of cell.schoolPerson; let isLast = last">
+                  <span [style.color]="getPersonColor(person)" style="font-weight: bold;">
+                    {{ person.toUpperCase() }}
+                  </span>
+                  <span *ngIf="!isLast && cell.schoolPerson!.length > 1" 
+                        [style.color]="getPersonColor(cell.schoolPerson![1])" 
+                        style="font-weight: bold;">+{{ cell.schoolPerson![1].toUpperCase() }}</span>
+                </ng-container>
+              </div>
+              <div class="school-info">
+                SCUOLA<br>{{ getSchoolTime(timeSlot, day) }}
+              </div>
+            </div>
+            
+            <!-- Activities -->
+            <div *ngFor="let activity of cell.activities" 
+                 [class]="'activity ' + activity.person + ' draggable-activity'"
+                 [attr.data-activity]="activity.id"
+                 draggable="true">
+              {{ activity.name }}
+            </div>
+          </ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
   
   <div class="bottom-controls">
     <button class="control-btn" disabled>↶ Annulla</button>
