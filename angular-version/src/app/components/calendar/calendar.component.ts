@@ -1,18 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
+import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { CalendarService } from '../../services/calendar.service';
-import { CalendarData, WeekDay } from '../../models/activity.model';
+import { CalendarData, WeekDay, Activity } from '../../models/activity.model';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DragDropModule],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
 export class CalendarComponent implements OnInit {
   calendarData$!: Observable<CalendarData>;
+  connectedDropLists: string[] = [];
   
   // Helper arrays for template iteration
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -51,5 +53,18 @@ export class CalendarComponent implements OnInit {
     if (timeSlot === '14:00-15:00') return '8:15-15:00';
     if (timeSlot === '15:00-16:00') return '8:15-16:00';
     return timeSlot;
+  }
+
+
+  onDrop(event: CdkDragDrop<Activity[]>, timeSlot: string, day: WeekDay): void {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      const activity: Activity = event.item.data;
+      const fromKey = event.previousContainer.id;
+      const toKey = this.getCellKey(timeSlot, day);
+      
+      this.calendarService.moveActivity(activity.id, fromKey, toKey);
+    }
   }
 }
