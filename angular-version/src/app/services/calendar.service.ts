@@ -1,0 +1,158 @@
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { Activity, CalendarData, CalendarCell, Person, WeekDay } from '../models/activity.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CalendarService {
+  private calendarData: CalendarData;
+  private calendarSubject = new BehaviorSubject<CalendarData>(this.initializeCalendar());
+
+  constructor() {
+    this.calendarData = this.initializeCalendar();
+    this.loadInitialData();
+  }
+
+  get calendar$(): Observable<CalendarData> {
+    return this.calendarSubject.asObservable();
+  }
+
+  private initializeCalendar(): CalendarData {
+    const timeSlots = [
+      '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00', 
+      '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
+    ];
+    
+    const weekDays: WeekDay[] = [
+      'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
+    ];
+
+    const cells = new Map<string, CalendarCell>();
+    
+    // Initialize all cells
+    timeSlots.forEach(timeSlot => {
+      weekDays.forEach(day => {
+        const key = `${timeSlot}-${day}`;
+        cells.set(key, {
+          timeSlot: { timeRange: timeSlot, day },
+          activities: [],
+          isSchoolTime: this.isSchoolTime(timeSlot, day),
+          schoolPerson: this.getSchoolPersons(timeSlot, day)
+        });
+      });
+    });
+
+    return { cells, timeSlots, weekDays };
+  }
+
+  private isSchoolTime(timeSlot: string, day: WeekDay): boolean {
+    if (day === 'saturday' || day === 'sunday') return false;
+    
+    const schoolTimes = [
+      '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00'
+    ];
+    
+    return schoolTimes.includes(timeSlot);
+  }
+
+  private getSchoolPersons(timeSlot: string, day: WeekDay): Person[] {
+    if (!this.isSchoolTime(timeSlot, day)) return [];
+    
+    // Logic for who has school when
+    if (timeSlot === '7:45-13:10') return ['leo'];
+    if (timeSlot === '8:15-14:00' && day === 'friday') return ['anna'];
+    if (timeSlot === '14:00-15:00' && (day === 'tuesday' || day === 'thursday')) return ['anna', 'mia'];
+    if (timeSlot === '14:00-15:00' && day === 'friday') return ['mia'];
+    if (timeSlot === '15:00-16:00' && (day === 'monday' || day === 'wednesday')) return ['anna', 'mia'];
+    
+    return [];
+  }
+
+  private loadInitialData(): void {
+    // Load the initial activities from the original calendar
+    const initialActivities: Activity[] = [
+      { id: 'chitarra', name: 'Chitarra\n13:45-15:30', person: 'leo', timeRange: '15:30-17:30' },
+      { id: 'danza-mer', name: 'Danza\n15:45-17:30\n(se possibile)', person: 'mia', timeRange: '15:30-17:30' },
+      { id: 'batteria', name: 'Batteria\n15:30-17:00', person: 'leo', timeRange: '15:30-17:30' },
+      { id: 'danza-ven', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '15:30-17:30' },
+      { id: 'danza-mart', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '16:35-18:30' },
+      { id: 'basket', name: 'Basket\n17:15-18:30', person: 'anna', timeRange: '16:35-18:30' },
+      { id: 'piano', name: 'Piano\n17:00-18:00', person: 'leo', timeRange: '16:35-18:30' },
+      { id: 'flauto-solo', name: 'Flauto Solo\n17:30-18:15', person: 'mia', timeRange: '16:35-18:30' },
+      { id: 'flauto-gruppo', name: 'Flauto Gruppo\n16:35-17:35', person: 'mia', timeRange: '16:35-18:30' },
+      { id: 'scout', name: 'Scout\n17:15-19:15', person: 'leo', timeRange: '17:15-19:15' },
+      { id: 'piscina-mia', name: 'Piscina\n19:00-20:00', person: 'mia', timeRange: '19:00-21:30' },
+      { id: 'piscina-leo', name: 'Piscina\n20:00-21:30', person: 'leo', timeRange: '19:00-21:30' }
+    ];
+
+    // Place activities in their initial positions
+    this.placeActivity('chitarra', '15:30-17:30', 'wednesday');
+    this.placeActivity('danza-mer', '15:30-17:30', 'wednesday');
+    this.placeActivity('batteria', '15:30-17:30', 'thursday');
+    this.placeActivity('danza-ven', '15:30-17:30', 'friday');
+    this.placeActivity('danza-mart', '16:35-18:30', 'tuesday');
+    this.placeActivity('basket', '16:35-18:30', 'tuesday');
+    this.placeActivity('piano', '16:35-18:30', 'wednesday');
+    this.placeActivity('flauto-solo', '16:35-18:30', 'wednesday');
+    this.placeActivity('flauto-gruppo', '16:35-18:30', 'thursday');
+    this.placeActivity('scout', '17:15-19:15', 'friday');
+    this.placeActivity('piscina-mia', '19:00-21:30', 'monday');
+    this.placeActivity('piscina-leo', '19:00-21:30', 'tuesday');
+  }
+
+  private placeActivity(activityId: string, timeSlot: string, day: WeekDay): void {
+    const key = `${timeSlot}-${day}`;
+    const cell = this.calendarData.cells.get(key);
+    
+    if (cell) {
+      const activity = this.findActivityById(activityId);
+      if (activity) {
+        cell.activities.push(activity);
+      }
+    }
+  }
+
+  private findActivityById(id: string): Activity | undefined {
+    const activityMap: Record<string, Activity> = {
+      'chitarra': { id: 'chitarra', name: 'Chitarra\n13:45-15:30', person: 'leo', timeRange: '15:30-17:30' },
+      'danza-mer': { id: 'danza-mer', name: 'Danza\n15:45-17:30\n(se possibile)', person: 'mia', timeRange: '15:30-17:30' },
+      'batteria': { id: 'batteria', name: 'Batteria\n15:30-17:00', person: 'leo', timeRange: '15:30-17:30' },
+      'danza-ven': { id: 'danza-ven', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '15:30-17:30' },
+      'danza-mart': { id: 'danza-mart', name: 'Danza\n15:45-17:30', person: 'mia', timeRange: '16:35-18:30' },
+      'basket': { id: 'basket', name: 'Basket\n17:15-18:30', person: 'anna', timeRange: '16:35-18:30' },
+      'piano': { id: 'piano', name: 'Piano\n17:00-18:00', person: 'leo', timeRange: '16:35-18:30' },
+      'flauto-solo': { id: 'flauto-solo', name: 'Flauto Solo\n17:30-18:15', person: 'mia', timeRange: '16:35-18:30' },
+      'flauto-gruppo': { id: 'flauto-gruppo', name: 'Flauto Gruppo\n16:35-17:35', person: 'mia', timeRange: '16:35-18:30' },
+      'scout': { id: 'scout', name: 'Scout\n17:15-19:15', person: 'leo', timeRange: '17:15-19:15' },
+      'piscina-mia': { id: 'piscina-mia', name: 'Piscina\n19:00-20:00', person: 'mia', timeRange: '19:00-21:30' },
+      'piscina-leo': { id: 'piscina-leo', name: 'Piscina\n20:00-21:30', person: 'leo', timeRange: '19:00-21:30' }
+    };
+    
+    return activityMap[id];
+  }
+
+  moveActivity(activityId: string, fromKey: string, toKey: string): boolean {
+    const fromCell = this.calendarData.cells.get(fromKey);
+    const toCell = this.calendarData.cells.get(toKey);
+    
+    if (!fromCell || !toCell) return false;
+    
+    const activityIndex = fromCell.activities.findIndex(a => a.id === activityId);
+    if (activityIndex === -1) return false;
+    
+    const activity = fromCell.activities.splice(activityIndex, 1)[0];
+    toCell.activities.push(activity);
+    
+    this.calendarSubject.next(this.calendarData);
+    return true;
+  }
+
+  getCellKey(timeSlot: string, day: WeekDay): string {
+    return `${timeSlot}-${day}`;
+  }
+
+  getCell(timeSlot: string, day: WeekDay): CalendarCell | undefined {
+    return this.calendarData.cells.get(this.getCellKey(timeSlot, day));
+  }
+}
