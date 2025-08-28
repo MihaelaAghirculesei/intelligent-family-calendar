@@ -6,6 +6,7 @@ import { CalendarService } from '../../services/calendar.service';
 import { HistoryService } from '../../services/history.service';
 import { CalendarData, WeekDay, Activity } from '../../models/activity.model';
 import { AddActivityComponent } from '../add-activity/add-activity.component';
+import { PersonService } from '../../services/person.service';
 
 @Component({
   selector: 'app-calendar',
@@ -21,6 +22,7 @@ export class CalendarComponent implements OnInit {
   canUndo$!: Observable<boolean>;
   canRedo$!: Observable<boolean>;
   connectedDropLists: string[] = [];
+  persons: any[] = [];
   
   // Helper arrays for template iteration
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -32,7 +34,8 @@ export class CalendarComponent implements OnInit {
 
   constructor(
     private calendarService: CalendarService,
-    private historyService: HistoryService
+    private historyService: HistoryService,
+    private personService: PersonService
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +44,11 @@ export class CalendarComponent implements OnInit {
     this.canRedo$ = this.historyService.canRedo$;
     
     this.calendarService.setHistoryService(this.historyService);
+    
+    // Subscribe to persons list for legend
+    this.personService.persons$.subscribe(persons => {
+      this.persons = persons;
+    });
   }
 
   getCellKey(timeSlot: string, day: WeekDay): string {
@@ -52,12 +60,7 @@ export class CalendarComponent implements OnInit {
   }
 
   getPersonColor(person: string): string {
-    switch (person) {
-      case 'anna': return '#2196F3';
-      case 'mia': return '#E91E63';
-      case 'leo': return '#4CAF50';
-      default: return '#333';
-    }
+    return this.personService.getPersonColor(person);
   }
 
   getSchoolTime(timeSlot: string, day: WeekDay): string {

@@ -24,11 +24,13 @@
         <select 
           id="person" 
           formControlName="person"
+          (change)="onPersonChange($event)"
           [class.error]="activityForm.get('person')?.invalid && activityForm.get('person')?.touched">
           <option value="">Seleziona persona</option>
-          <option *ngFor="let person of people" [value]="person.value">
-            {{ person.label }}
+          <option *ngFor="let person of persons" [value]="person.id">
+            {{ person.name }}
           </option>
+          <option value="add_new_person" class="add-new-option">➕ Aggiungi nuova persona</option>
         </select>
         <div class="error-message" *ngIf="getFieldError('person')">
           {{ getFieldError('person') }}
@@ -87,4 +89,9 @@
       </div>
     </form>
   </div>
+  
+  <app-add-person
+    (personAdded)="onPersonAdded($event)"
+    (cancelled)="onAddPersonCancelled()"
+    #addPersonComponent></app-add-person>
 </div>

@@ -163,6 +163,12 @@
   background-color: #eeeeee;
 }
 
+.add-new-option {
+  background-color: #f0f8ff !important;
+  font-weight: bold !important;
+  color: #2196F3 !important;
+}
+
 @media (max-width: 600px) {
   .modal-content {
     width: 95%;

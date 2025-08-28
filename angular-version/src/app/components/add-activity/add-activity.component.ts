@@ -1,21 +1,25 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Activity, WeekDay } from '../../models/activity.model';
+import { PersonService, PersonData } from '../../services/person.service';
+import { AddPersonComponent } from '../add-person/add-person.component';
 
 @Component({
   selector: 'app-add-activity',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AddPersonComponent],
   templateUrl: './add-activity.component.html',
   styleUrl: './add-activity.component.css'
 })
-export class AddActivityComponent {
+export class AddActivityComponent implements OnInit {
+  @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
   @Output() activityAdded = new EventEmitter<{activity: Activity, timeSlot: string, day: WeekDay}>();
   @Output() cancelled = new EventEmitter<void>();
 
   activityForm: FormGroup;
   isVisible = false;
+  persons: PersonData[] = [];
 
   weekDays: {value: WeekDay, label: string}[] = [
     { value: 'monday', label: 'Lunedì' },
@@ -32,19 +36,19 @@ export class AddActivityComponent {
     '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
   ];
 
-  people = [
-    { value: 'anna', label: 'Anna' },
-    { value: 'mia', label: 'Mia' },
-    { value: 'leo', label: 'Leo' }
-  ];
-
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private personService: PersonService) {
     this.activityForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(2)]],
       person: ['', Validators.required],
       day: ['', Validators.required],
       startTime: ['', [Validators.required, Validators.pattern(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)]],
       endTime: ['', [Validators.required, Validators.pattern(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.personService.persons$.subscribe(persons => {
+      this.persons = persons;
     });
   }
 
@@ -135,5 +139,32 @@ export class AddActivityComponent {
       'endTime': 'Ora fine'
     };
     return displayNames[fieldName] || fieldName;
+  }
+
+  showAddPersonForm(): void {
+    this.addPersonComponent.show();
+  }
+
+  onPersonAdded(personData: PersonData): void {
+    const newPerson = this.personService.addPerson(personData.name, personData.color);
+    // Auto-select the new person
+    this.activityForm.patchValue({ person: newPerson.id });
+  }
+
+  onAddPersonCancelled(): void {
+    // Person addition was cancelled, no action needed
+  }
+
+  isAddNewPersonOption(value: string): boolean {
+    return value === 'add_new_person';
+  }
+
+  onPersonChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    if (target.value === 'add_new_person') {
+      this.showAddPersonForm();
+      // Reset the select to empty
+      this.activityForm.patchValue({ person: '' });
+    }
   }
 }

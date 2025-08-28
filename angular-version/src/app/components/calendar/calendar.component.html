@@ -8,9 +8,12 @@
   </div>
   
   <div class="legend">
-    <div class="legend-item anna">Anna</div>
-    <div class="legend-item mia">Mia</div>
-    <div class="legend-item leo">Leo</div>
+    <div 
+      *ngFor="let person of persons" 
+      class="legend-item"
+      [style.background-color]="person.color">
+      {{ person.name }}
+    </div>
   </div>
   
   <div cdkDropListGroup>
@@ -58,7 +61,8 @@
                 <div *ngFor="let activity of cell.activities" 
                      cdkDrag
                      [cdkDragData]="activity"
-                     [class]="'activity ' + activity.person + ' draggable-activity'">
+                     class="activity draggable-activity"
+                     [style.background-color]="getPersonColor(activity.person)">
                   {{ activity.title }}<br><small>{{ activity.timeRange }}</small>
                 </div>
               </div>

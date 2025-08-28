@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Activity, CalendarData, CalendarCell, Person, WeekDay } from '../models/activity.model';
 import { HistoryService } from './history.service';
+import { PersonService } from './person.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class CalendarService {
 
   private historyService?: HistoryService;
 
-  constructor() {
+  constructor(private personService: PersonService) {
     this.calendarData = this.initializeCalendar();
     this.loadInitialData();
   }
