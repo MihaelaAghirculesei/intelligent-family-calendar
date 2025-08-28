@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Activity, CalendarData, CalendarCell, Person, WeekDay } from '../models/activity.model';
+import { HistoryService } from './history.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,9 +10,15 @@ export class CalendarService {
   private calendarData: CalendarData;
   private calendarSubject = new BehaviorSubject<CalendarData>(this.initializeCalendar());
 
+  private historyService?: HistoryService;
+
   constructor() {
     this.calendarData = this.initializeCalendar();
     this.loadInitialData();
+  }
+
+  setHistoryService(historyService: HistoryService): void {
+    this.historyService = historyService;
   }
 
   get calendar$(): Observable<CalendarData> {
@@ -122,12 +129,46 @@ export class CalendarService {
     
     const activityIndex = fromCell.activities.findIndex(a => a.id === activityId);
     if (activityIndex === -1) return false;
+
+    if (this.historyService) {
+      const fromPosition = this.parseKey(fromKey);
+      const toPosition = this.parseKey(toKey);
+      
+      this.historyService.addAction({
+        type: 'move',
+        activityId,
+        originalPosition: fromPosition,
+        newPosition: toPosition
+      });
+    }
     
     const activity = fromCell.activities.splice(activityIndex, 1)[0];
     toCell.activities.push(activity);
     
     this.calendarSubject.next(this.calendarData);
     return true;
+  }
+
+  private parseKey(key: string): { timeSlot: string; day: WeekDay; row: number; col: number } {
+    const parts = key.split('-');
+    const timeSlot = parts.slice(0, -1).join('-');
+    const day = parts[parts.length - 1] as WeekDay;
+    
+    const row = this.timeSlots.indexOf(timeSlot);
+    const col = this.weekDays.indexOf(day);
+    
+    return { timeSlot, day, row, col };
+  }
+
+  private get timeSlots(): string[] {
+    return [
+      '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00', 
+      '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
+    ];
+  }
+
+  private get weekDays(): WeekDay[] {
+    return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   }
 
   getCellKey(timeSlot: string, day: WeekDay): string {

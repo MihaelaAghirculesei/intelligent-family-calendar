@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { CalendarService } from '../../services/calendar.service';
+import { HistoryService } from '../../services/history.service';
 import { CalendarData, WeekDay, Activity } from '../../models/activity.model';
 
 @Component({
@@ -14,6 +15,8 @@ import { CalendarData, WeekDay, Activity } from '../../models/activity.model';
 })
 export class CalendarComponent implements OnInit {
   calendarData$!: Observable<CalendarData>;
+  canUndo$!: Observable<boolean>;
+  canRedo$!: Observable<boolean>;
   connectedDropLists: string[] = [];
   
   // Helper arrays for template iteration
@@ -24,10 +27,17 @@ export class CalendarComponent implements OnInit {
     '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
   ];
 
-  constructor(private calendarService: CalendarService) {}
+  constructor(
+    private calendarService: CalendarService,
+    private historyService: HistoryService
+  ) {}
 
   ngOnInit(): void {
     this.calendarData$ = this.calendarService.calendar$;
+    this.canUndo$ = this.historyService.canUndo$;
+    this.canRedo$ = this.historyService.canRedo$;
+    
+    this.calendarService.setHistoryService(this.historyService);
   }
 
   getCellKey(timeSlot: string, day: WeekDay): string {
@@ -66,5 +76,13 @@ export class CalendarComponent implements OnInit {
       
       this.calendarService.moveActivity(activity.id, fromKey, toKey);
     }
+  }
+
+  onUndo(): void {
+    this.historyService.undo();
+  }
+
+  onRedo(): void {
+    this.historyService.redo();
   }
 }

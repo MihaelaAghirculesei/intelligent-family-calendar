@@ -67,7 +67,11 @@
   </div>
   
   <div class="bottom-controls">
-    <button class="control-btn" disabled>↶ Annulla</button>
-    <button class="control-btn" disabled>↷ Ripeti</button>
+    <button class="control-btn" 
+            [disabled]="!(canUndo$ | async)"
+            (click)="onUndo()">↶ Annulla</button>
+    <button class="control-btn" 
+            [disabled]="!(canRedo$ | async)"
+            (click)="onRedo()">↷ Ripeti</button>
   </div>
 </div>
