@@ -19,6 +19,38 @@ export class CalendarService {
 
   setHistoryService(historyService: HistoryService): void {
     this.historyService = historyService;
+    
+    // Set up undo/redo callbacks to avoid circular dependency
+    historyService.setCallbacks(
+      (action) => this.handleUndo(action),
+      (action) => this.handleRedo(action)
+    );
+  }
+
+  private handleUndo(action: any): void {
+    if (action.type === 'move' && action.originalPosition && action.newPosition) {
+      const fromKey = this.positionToKey(action.newPosition);
+      const toKey = this.positionToKey(action.originalPosition);
+      this.moveActivityDirect(action.activityId, fromKey, toKey);
+    } else if (action.type === 'add' && action.newPosition) {
+      const key = this.positionToKey(action.newPosition);
+      this.removeActivityDirect(action.activityId, key);
+    }
+  }
+
+  private handleRedo(action: any): void {
+    if (action.type === 'move' && action.originalPosition && action.newPosition) {
+      const fromKey = this.positionToKey(action.originalPosition);
+      const toKey = this.positionToKey(action.newPosition);
+      this.moveActivityDirect(action.activityId, fromKey, toKey);
+    } else if (action.type === 'add' && action.newPosition && action.originalData) {
+      const key = this.positionToKey(action.newPosition);
+      this.addActivityDirect(action.originalData, key);
+    }
+  }
+
+  private positionToKey(position: any): string {
+    return `${position.timeSlot}-${position.day}`;
   }
 
   get calendar$(): Observable<CalendarData> {
@@ -104,18 +136,18 @@ export class CalendarService {
 
   private findActivityById(id: string): Activity | undefined {
     const activityMap: Record<string, Activity> = {
-      'chitarra': { id: 'chitarra', name: 'Chitarra', person: 'leo', timeRange: '13:45-15:30' },
-      'danza-mer': { id: 'danza-mer', name: 'Danza (se possibile)', person: 'mia', timeRange: '15:45-17:30' },
-      'batteria': { id: 'batteria', name: 'Batteria', person: 'leo', timeRange: '15:30-17:00' },
-      'danza-ven': { id: 'danza-ven', name: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
-      'danza-mart': { id: 'danza-mart', name: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
-      'basket': { id: 'basket', name: 'Basket', person: 'anna', timeRange: '17:15-18:30' },
-      'piano': { id: 'piano', name: 'Piano', person: 'leo', timeRange: '17:00-18:00' },
-      'flauto-solo': { id: 'flauto-solo', name: 'Flauto Solo', person: 'mia', timeRange: '17:30-18:15' },
-      'flauto-gruppo': { id: 'flauto-gruppo', name: 'Flauto Gruppo', person: 'mia', timeRange: '16:35-17:35' },
-      'scout': { id: 'scout', name: 'Scout', person: 'leo', timeRange: '17:15-19:15' },
-      'piscina-mia': { id: 'piscina-mia', name: 'Piscina', person: 'mia', timeRange: '19:00-20:00' },
-      'piscina-leo': { id: 'piscina-leo', name: 'Piscina', person: 'leo', timeRange: '20:00-21:30' }
+      'chitarra': { id: 'chitarra', title: 'Chitarra', person: 'leo', timeRange: '13:45-15:30' },
+      'danza-mer': { id: 'danza-mer', title: 'Danza (se possibile)', person: 'mia', timeRange: '15:45-17:30' },
+      'batteria': { id: 'batteria', title: 'Batteria', person: 'leo', timeRange: '15:30-17:00' },
+      'danza-ven': { id: 'danza-ven', title: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
+      'danza-mart': { id: 'danza-mart', title: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
+      'basket': { id: 'basket', title: 'Basket', person: 'anna', timeRange: '17:15-18:30' },
+      'piano': { id: 'piano', title: 'Piano', person: 'leo', timeRange: '17:00-18:00' },
+      'flauto-solo': { id: 'flauto-solo', title: 'Flauto Solo', person: 'mia', timeRange: '17:30-18:15' },
+      'flauto-gruppo': { id: 'flauto-gruppo', title: 'Flauto Gruppo', person: 'mia', timeRange: '16:35-17:35' },
+      'scout': { id: 'scout', title: 'Scout', person: 'leo', timeRange: '17:15-19:15' },
+      'piscina-mia': { id: 'piscina-mia', title: 'Piscina', person: 'mia', timeRange: '19:00-20:00' },
+      'piscina-leo': { id: 'piscina-leo', title: 'Piscina', person: 'leo', timeRange: '20:00-21:30' }
     };
     
     return activityMap[id];
@@ -177,5 +209,63 @@ export class CalendarService {
 
   getCell(timeSlot: string, day: WeekDay): CalendarCell | undefined {
     return this.calendarData.cells.get(this.getCellKey(timeSlot, day));
+  }
+
+  addActivity(activity: Activity, timeSlot: string, day: WeekDay): boolean {
+    const key = this.getCellKey(timeSlot, day);
+    const cell = this.calendarData.cells.get(key);
+    
+    if (!cell) return false;
+
+    if (this.historyService) {
+      this.historyService.addAction({
+        type: 'add',
+        activityId: activity.id,
+        originalPosition: null,
+        newPosition: this.parseKey(key),
+        originalData: activity
+      });
+    }
+
+    cell.activities.push(activity);
+    this.calendarSubject.next(this.calendarData);
+    return true;
+  }
+
+  addActivityDirect(activity: Activity, key: string): boolean {
+    const cell = this.calendarData.cells.get(key);
+    if (!cell) return false;
+    
+    cell.activities.push(activity);
+    this.calendarSubject.next(this.calendarData);
+    return true;
+  }
+
+  removeActivityDirect(activityId: string, key: string): boolean {
+    const cell = this.calendarData.cells.get(key);
+    if (!cell) return false;
+    
+    const activityIndex = cell.activities.findIndex(a => a.id === activityId);
+    if (activityIndex === -1) return false;
+    
+    cell.activities.splice(activityIndex, 1);
+    this.calendarSubject.next(this.calendarData);
+    return true;
+  }
+
+  moveActivityDirect(activityId: string, fromKey: string, toKey: string): boolean {
+    const fromCell = this.calendarData.cells.get(fromKey);
+    const toCell = this.calendarData.cells.get(toKey);
+    
+    if (!fromCell || !toCell) return false;
+    
+    const activityIndex = fromCell.activities.findIndex(a => a.id === activityId);
+    if (activityIndex === -1) return false;
+    
+    const activity = fromCell.activities.splice(activityIndex, 1)[0];
+    toCell.activities.push(activity);
+    
+    this.calendarSubject.next(this.calendarData);
+    return true;
   }
 }

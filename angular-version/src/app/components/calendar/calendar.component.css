@@ -18,8 +18,8 @@
 .header-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 15px;
-    position: relative;
 }
 
 h1 {
@@ -30,9 +30,25 @@ h1 {
     flex: 1;
 }
 
-.export-btn {
-    position: absolute;
-    right: 0;
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.add-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.add-btn:hover {
+    background-color: #45a049;
 }
 
 .bottom-controls {

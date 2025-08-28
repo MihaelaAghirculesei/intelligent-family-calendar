@@ -1,19 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { CalendarService } from '../../services/calendar.service';
 import { HistoryService } from '../../services/history.service';
 import { CalendarData, WeekDay, Activity } from '../../models/activity.model';
+import { AddActivityComponent } from '../add-activity/add-activity.component';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, DragDropModule, AddActivityComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
 export class CalendarComponent implements OnInit {
+  @ViewChild('addActivityComponent') addActivityComponent!: AddActivityComponent;
+  
   calendarData$!: Observable<CalendarData>;
   canUndo$!: Observable<boolean>;
   canRedo$!: Observable<boolean>;
@@ -84,5 +87,17 @@ export class CalendarComponent implements OnInit {
 
   onRedo(): void {
     this.historyService.redo();
+  }
+
+  showAddActivityForm(): void {
+    this.addActivityComponent.show();
+  }
+
+  onActivityAdded(event: {activity: Activity, timeSlot: string, day: WeekDay}): void {
+    this.calendarService.addActivity(event.activity, event.timeSlot, event.day);
+  }
+
+  onAddActivityCancelled(): void {
+    // Form was cancelled, no action needed
   }
 }

@@ -1,8 +1,8 @@
 export interface HistoryAction {
   type: 'move' | 'add' | 'remove' | 'edit';
   activityId: string;
-  originalPosition?: CellPosition;
-  newPosition?: CellPosition;
+  originalPosition?: CellPosition | null;
+  newPosition?: CellPosition | null;
   originalData?: any;
   newData?: any;
   timestamp: Date;

@@ -1,7 +1,10 @@
 <div class="container" *ngIf="calendarData$ | async as calendarData">
   <div class="header-row">
     <h1>Orario Settimanale Famiglia</h1>
-    <button class="export-btn">📄 Esporta PDF</button>
+    <div class="header-buttons">
+      <button class="add-btn" (click)="showAddActivityForm()">➕ Aggiungi Attività</button>
+      <button class="export-btn">📄 Esporta PDF</button>
+    </div>
   </div>
   
   <div class="legend">
@@ -56,7 +59,7 @@
                      cdkDrag
                      [cdkDragData]="activity"
                      [class]="'activity ' + activity.person + ' draggable-activity'">
-                  {{ activity.name }}<br><small>{{ activity.timeRange }}</small>
+                  {{ activity.title }}<br><small>{{ activity.timeRange }}</small>
                 </div>
               </div>
             </ng-container>
@@ -74,4 +77,9 @@
             [disabled]="!(canRedo$ | async)"
             (click)="onRedo()">↷ Ripeti</button>
   </div>
+  
+  <app-add-activity
+    (activityAdded)="onActivityAdded($event)"
+    (cancelled)="onAddActivityCancelled()"
+    #addActivityComponent></app-add-activity>
 </div>

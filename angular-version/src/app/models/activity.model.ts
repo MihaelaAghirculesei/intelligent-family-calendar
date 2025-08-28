@@ -1,8 +1,8 @@
 export interface Activity {
   id: string;
-  name: string;
+  title: string;
   person: Person;
-  timeRange: string;
+  timeRange?: string;
   notes?: string;
 }
 

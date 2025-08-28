@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HistoryAction, HistoryState, CellPosition } from '../models/history.model';
-import { CalendarService } from './calendar.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +14,10 @@ export class HistoryService {
 
   private canUndoSubject = new BehaviorSubject<boolean>(false);
   private canRedoSubject = new BehaviorSubject<boolean>(false);
+  private undoCallback: ((action: HistoryAction) => void) | null = null;
+  private redoCallback: ((action: HistoryAction) => void) | null = null;
 
-  constructor(private calendarService: CalendarService) {}
+  constructor() {}
 
   get canUndo$(): Observable<boolean> {
     return this.canUndoSubject.asObservable();
@@ -48,17 +49,18 @@ export class HistoryService {
     this.updateButtonStates();
   }
 
+  setCallbacks(undoCallback: (action: HistoryAction) => void, redoCallback: (action: HistoryAction) => void): void {
+    this.undoCallback = undoCallback;
+    this.redoCallback = redoCallback;
+  }
+
   undo(): boolean {
     if (!this.canUndo()) return false;
     
     const action = this.historyState.actions[this.historyState.currentIndex];
     
-    if (action.type === 'move' && action.originalPosition && action.newPosition) {
-      // Reverse the move
-      const fromKey = this.positionToKey(action.newPosition);
-      const toKey = this.positionToKey(action.originalPosition);
-      
-      this.calendarService.moveActivity(action.activityId, fromKey, toKey);
+    if (this.undoCallback) {
+      this.undoCallback(action);
     }
     
     this.historyState.currentIndex--;
@@ -72,12 +74,8 @@ export class HistoryService {
     this.historyState.currentIndex++;
     const action = this.historyState.actions[this.historyState.currentIndex];
     
-    if (action.type === 'move' && action.originalPosition && action.newPosition) {
-      // Redo the move
-      const fromKey = this.positionToKey(action.originalPosition);
-      const toKey = this.positionToKey(action.newPosition);
-      
-      this.calendarService.moveActivity(action.activityId, fromKey, toKey);
+    if (this.redoCallback) {
+      this.redoCallback(action);
     }
     
     this.updateButtonStates();
