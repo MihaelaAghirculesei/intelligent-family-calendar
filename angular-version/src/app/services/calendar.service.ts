@@ -21,7 +21,6 @@ export class CalendarService {
   setHistoryService(historyService: HistoryService): void {
     this.historyService = historyService;
     
-    // Set up undo/redo callbacks to avoid circular dependency
     historyService.setCallbacks(
       (action) => this.handleUndo(action),
       (action) => this.handleRedo(action)

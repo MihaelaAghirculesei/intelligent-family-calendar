@@ -66,7 +66,6 @@ export class AddActivityComponent implements OnInit {
     if (this.activityForm.valid) {
       const formValue = this.activityForm.value;
       
-      // Create custom time slot from start and end times
       const customTimeSlot = `${formValue.startTime}-${formValue.endTime}`;
       
       const activity: Activity = {
@@ -87,8 +86,7 @@ export class AddActivityComponent implements OnInit {
   }
 
   private findBestTimeSlot(startTime: string): string {
-    // Find the best matching time slot from predefined slots
-    // This helps with calendar placement
+
     const timeSlots = [
       '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00',
       '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
@@ -97,7 +95,6 @@ export class AddActivityComponent implements OnInit {
     const [hours, minutes] = startTime.split(':').map(Number);
     const startMinutes = hours * 60 + minutes;
     
-    // Find closest time slot
     let bestMatch = timeSlots[0];
     let smallestDiff = Math.abs(this.timeToMinutes('7:45') - startMinutes);
     
@@ -147,12 +144,10 @@ export class AddActivityComponent implements OnInit {
 
   onPersonAdded(personData: PersonData): void {
     const newPerson = this.personService.addPerson(personData.name, personData.color);
-    // Auto-select the new person
     this.activityForm.patchValue({ person: newPerson.id });
   }
 
   onAddPersonCancelled(): void {
-    // Person addition was cancelled, no action needed
   }
 
   isAddNewPersonOption(value: string): boolean {
@@ -163,7 +158,6 @@ export class AddActivityComponent implements OnInit {
     const target = event.target as HTMLSelectElement;
     if (target.value === 'add_new_person') {
       this.showAddPersonForm();
-      // Reset the select to empty
       this.activityForm.patchValue({ person: '' });
     }
   }

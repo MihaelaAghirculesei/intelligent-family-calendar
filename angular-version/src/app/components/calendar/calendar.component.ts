@@ -24,7 +24,6 @@ export class CalendarComponent implements OnInit {
   connectedDropLists: string[] = [];
   persons: any[] = [];
   
-  // Helper arrays for template iteration
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   weekDayLabels = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
   timeSlots = [
@@ -45,7 +44,6 @@ export class CalendarComponent implements OnInit {
     
     this.calendarService.setHistoryService(this.historyService);
     
-    // Subscribe to persons list for legend
     this.personService.persons$.subscribe(persons => {
       this.persons = persons;
     });
@@ -101,6 +99,5 @@ export class CalendarComponent implements OnInit {
   }
 
   onAddActivityCancelled(): void {
-    // Form was cancelled, no action needed
   }
 }

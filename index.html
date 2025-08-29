@@ -234,7 +234,6 @@
     </div>
 
     <script>
-        // PDF Export functionality
         document.getElementById('exportPdfBtn').addEventListener('click', function() {
             const element = document.querySelector('.container');
             const opt = {
@@ -256,24 +255,18 @@
             html2pdf().set(opt).from(element).save();
         });
 
-        // Drag & Drop functionality
         let draggedElement = null;
-        
-        // Undo/Redo system
+
         let actionHistory = [];
         let currentHistoryIndex = -1;
         const maxHistorySize = 50;
 
-        // Function to save action to history
         function saveAction(action) {
-            // Remove any actions after current index (when user does new action after undo)
             actionHistory = actionHistory.slice(0, currentHistoryIndex + 1);
             
-            // Add new action
             actionHistory.push(action);
             currentHistoryIndex++;
-            
-            // Limit history size
+
             if (actionHistory.length > maxHistorySize) {
                 actionHistory.shift();
                 currentHistoryIndex--;
@@ -282,7 +275,6 @@
             updateUndoRedoButtons();
         }
 
-        // Function to update button states
         function updateUndoRedoButtons() {
             const undoBtn = document.getElementById('undoBtn');
             const redoBtn = document.getElementById('redoBtn');
@@ -291,13 +283,11 @@
             redoBtn.disabled = currentHistoryIndex >= actionHistory.length - 1;
         }
 
-        // Function to perform undo
         function performUndo() {
             if (currentHistoryIndex < 0) return;
             
             const action = actionHistory[currentHistoryIndex];
             
-            // Find the moved element and restore it to original position
             const movedElement = document.querySelector(`[data-activity="${action.activityId}"]`);
             if (movedElement && action.originalParent) {
                 const originalCell = findCellByPosition(action.originalParent);
@@ -314,14 +304,12 @@
             updateUndoRedoButtons();
         }
 
-        // Function to perform redo
         function performRedo() {
             if (currentHistoryIndex >= actionHistory.length - 1) return;
             
             currentHistoryIndex++;
             const action = actionHistory[currentHistoryIndex];
             
-            // Find the element and move it to new position
             const element = document.querySelector(`[data-activity="${action.activityId}"]`);
             if (element && action.newParent) {
                 const newCell = findCellByPosition(action.newParent);
@@ -337,7 +325,6 @@
             updateUndoRedoButtons();
         }
 
-        // Helper function to find cell by position
         function findCellByPosition(position) {
             const rows = document.querySelectorAll('tbody tr');
             if (rows[position.row] && rows[position.row].cells[position.col]) {
@@ -346,7 +333,6 @@
             return null;
         }
 
-        // Helper function to get cell position
         function getCellPosition(cell) {
             const row = cell.parentNode;
             const tbody = row.parentNode;
@@ -356,7 +342,6 @@
             };
         }
 
-        // Function to add drag listeners to an element
         function addDragListeners(activity) {
             activity.addEventListener('dragstart', function(e) {
                 draggedElement = this;
@@ -371,14 +356,11 @@
             });
         }
 
-        // Add drag event listeners to all draggable activities
         document.querySelectorAll('.draggable-activity').forEach(addDragListeners);
 
-        // Add click listeners for undo/redo buttons
         document.getElementById('undoBtn').addEventListener('click', performUndo);
         document.getElementById('redoBtn').addEventListener('click', performRedo);
 
-        // Add keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey || e.metaKey) {
                 if (e.key === 'z' && !e.shiftKey) {
@@ -391,10 +373,8 @@
             }
         });
 
-        // Initialize button states
         updateUndoRedoButtons();
 
-        // Add drop event listeners to all table cells
         document.querySelectorAll('td').forEach(cell => {
             cell.addEventListener('dragover', function(e) {
                 e.preventDefault();
@@ -410,13 +390,11 @@
                 e.preventDefault();
                 this.classList.remove('drag-over');
                 
-                // Don't allow dropping on time column or cells with school activities
                 if (this.classList.contains('time-col') || this.querySelector('.school-leo, .school-anna-mia')) {
                     return;
                 }
 
                 if (draggedElement) {
-                    // Check for conflicts - warn if cell already has activities
                     const existingActivities = this.querySelectorAll('.draggable-activity');
                     if (existingActivities.length > 0) {
                         const proceed = confirm('Questa cella contiene già delle attività. Vuoi comunque spostare qui l\'attività?');
@@ -426,7 +404,6 @@
                         }
                     }
 
-                    // Save action to history BEFORE making changes
                     const originalParent = getCellPosition(draggedElement.parentNode);
                     const newParent = getCellPosition(this);
                     const activityId = draggedElement.dataset.activity;
@@ -438,22 +415,16 @@
                         newParent: newParent
                     });
 
-                    // Create a clean clone of the original element
                     const newElement = draggedElement.cloneNode(true);
                     
-                    // Remove ALL style attributes from the clone
                     newElement.removeAttribute('style');
                     
-                    // Remove original element
                     draggedElement.remove();
                     
-                    // Add clean clone to new location
                     this.appendChild(newElement);
                     
-                    // Re-add event listeners to the new element
                     addDragListeners(newElement);
                     
-                    // Add a subtle animation to show the move
                     newElement.style.transform = 'scale(1.05)';
                     setTimeout(() => {
                         newElement.style.transform = '';

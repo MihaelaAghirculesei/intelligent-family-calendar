@@ -28,10 +28,8 @@ export class HistoryService {
   }
 
   addAction(action: Omit<HistoryAction, 'timestamp'>): void {
-    // Remove any actions after current index (when user does new action after undo)
     this.historyState.actions = this.historyState.actions.slice(0, this.historyState.currentIndex + 1);
     
-    // Add new action with timestamp
     const fullAction: HistoryAction = {
       ...action,
       timestamp: new Date()
@@ -40,7 +38,6 @@ export class HistoryService {
     this.historyState.actions.push(fullAction);
     this.historyState.currentIndex++;
     
-    // Limit history size
     if (this.historyState.actions.length > this.historyState.maxHistorySize) {
       this.historyState.actions.shift();
       this.historyState.currentIndex--;
