@@ -54,6 +54,7 @@
               <div cdkDropList 
                    [id]="getCellKey(timeSlot, day)"
                    [cdkDropListData]="cell.activities"
+                   [cdkDropListConnectedTo]="connectedDropLists"
                    (cdkDropListDropped)="onDrop($event, timeSlot, day)"
                    class="activity-drop-zone">
                 <div *ngFor="let activity of cell.activities" 

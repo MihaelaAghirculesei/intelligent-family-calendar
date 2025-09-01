@@ -47,6 +47,13 @@ export class CalendarComponent implements OnInit {
     this.personService.persons$.subscribe(persons => {
       this.persons = persons;
     });
+
+    this.connectedDropLists = [];
+    for (const timeSlot of this.timeSlots) {
+      for (const day of this.weekDays) {
+        this.connectedDropLists.push(this.getCellKey(timeSlot, day));
+      }
+    }
   }
 
   getCellKey(timeSlot: string, day: WeekDay): string {

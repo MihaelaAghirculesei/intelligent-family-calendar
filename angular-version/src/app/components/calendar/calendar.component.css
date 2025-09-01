@@ -185,6 +185,11 @@ h1 {
     border: 1px dashed #ccc;
 }
 
+.cdk-drop-list-active {
+    background-color: rgba(76, 175, 80, 0.1) !important;
+    border: 2px dashed #4CAF50 !important;
+}
+
 .school-leo,
 .school-anna-mia {
     background-color: #FFD700 !important;
