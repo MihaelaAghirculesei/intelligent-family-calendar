@@ -1,28 +1,38 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { CalendarService } from '../../services/calendar.service';
 import { HistoryService } from '../../services/history.service';
-import { CalendarData, WeekDay, Activity } from '../../models/activity.model';
+import { CalendarData, WeekDay, Activity, Person } from '../../models/activity.model';
 import { AddActivityComponent } from '../add-activity/add-activity.component';
-import { PersonService } from '../../services/person.service';
+import { AddPersonComponent } from '../add-person/add-person.component';
+import { PersonService, PersonData } from '../../services/person.service';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, DragDropModule, AddActivityComponent],
+  imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
 export class CalendarComponent implements OnInit {
   @ViewChild('addActivityComponent') addActivityComponent!: AddActivityComponent;
+  @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
   
   calendarData$!: Observable<CalendarData>;
   canUndo$!: Observable<boolean>;
   canRedo$!: Observable<boolean>;
   connectedDropLists: string[] = [];
   persons: any[] = [];
+  
+  editingActivityId: string | null = null;
+  editForm: {
+    title: string;
+    timeRange: string;
+    person: Person;
+  } = { title: '', timeRange: '', person: 'anna' };
   
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   weekDayLabels = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
@@ -106,5 +116,45 @@ export class CalendarComponent implements OnInit {
   }
 
   onAddActivityCancelled(): void {
+  }
+
+  startEdit(activity: Activity): void {
+    this.editingActivityId = activity.id;
+    this.editForm = {
+      title: activity.title,
+      timeRange: activity.timeRange || '',
+      person: activity.person
+    };
+  }
+
+  saveEdit(): void {
+    if (!this.editingActivityId) return;
+    
+    const updates: Partial<Activity> = {
+      title: this.editForm.title,
+      timeRange: this.editForm.timeRange,
+      person: this.editForm.person
+    };
+    
+    this.calendarService.updateActivity(this.editingActivityId, updates);
+    this.cancelEdit();
+  }
+
+  cancelEdit(): void {
+    this.editingActivityId = null;
+    const firstPerson = this.persons.length > 0 ? this.persons[0].id : 'anna';
+    this.editForm = { title: '', timeRange: '', person: firstPerson };
+  }
+
+  showAddPersonForm(): void {
+    this.addPersonComponent.show();
+  }
+
+  onPersonAdded(personData: PersonData): void {
+    const newPerson = this.personService.addPerson(personData.name, personData.color);
+    this.editForm.person = newPerson.id;
+  }
+
+  onAddPersonCancelled(): void {
   }
 }

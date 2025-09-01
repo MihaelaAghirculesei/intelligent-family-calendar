@@ -61,8 +61,44 @@
                      cdkDrag
                      [cdkDragData]="activity"
                      class="activity draggable-activity"
-                     [style.background-color]="getPersonColor(activity.person)">
-                  {{ activity.title }}<br><small>{{ activity.timeRange }}</small>
+                     [style.background-color]="getPersonColor(activity.person)"
+                     (dblclick)="startEdit(activity)"
+                     [class.editing]="editingActivityId === activity.id">
+                  
+                  <div *ngIf="editingActivityId !== activity.id">
+                    {{ activity.title }}<br><small>{{ activity.timeRange }}</small>
+                  </div>
+                  
+                  <div *ngIf="editingActivityId === activity.id" class="edit-form" (click)="$event.stopPropagation()">
+                    <input [(ngModel)]="editForm.title" 
+                           class="edit-input title-input"
+                           placeholder="Titolo"
+                           (keyup.enter)="saveEdit()"
+                           (keyup.escape)="cancelEdit()"
+                           #titleInput>
+                    <input [(ngModel)]="editForm.timeRange" 
+                           class="edit-input time-input"
+                           placeholder="Orario"
+                           (keyup.enter)="saveEdit()"
+                           (keyup.escape)="cancelEdit()">
+                    <div class="person-selector">
+                      <select [(ngModel)]="editForm.person" class="edit-select">
+                        <option *ngFor="let person of persons" [value]="person.id">
+                          {{ person.name }}
+                        </option>
+                      </select>
+                      <button type="button" 
+                              class="add-person-btn"
+                              (click)="showAddPersonForm()"
+                              title="Aggiungi nuova persona">
+                        ➕
+                      </button>
+                    </div>
+                    <div class="edit-buttons">
+                      <button (click)="saveEdit()" class="save-btn">✓</button>
+                      <button (click)="cancelEdit()" class="cancel-btn">✕</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </ng-container>
@@ -85,4 +121,9 @@
     (activityAdded)="onActivityAdded($event)"
     (cancelled)="onAddActivityCancelled()"
     #addActivityComponent></app-add-activity>
+    
+  <app-add-person
+    (personAdded)="onPersonAdded($event)"
+    (cancelled)="onAddPersonCancelled()"
+    #addPersonComponent></app-add-person>
 </div>

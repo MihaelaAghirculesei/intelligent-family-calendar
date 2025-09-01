@@ -190,6 +190,100 @@ h1 {
     border: 2px dashed #4CAF50 !important;
 }
 
+.activity.editing {
+    z-index: 1000;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 2px;
+}
+
+.edit-input {
+    border: none;
+    background: rgba(255,255,255,0.9);
+    border-radius: 2px;
+    padding: 1px 3px;
+    font-size: 7px;
+    font-weight: bold;
+    color: #333;
+}
+
+.edit-select {
+    border: none;
+    background: rgba(255,255,255,0.9);
+    border-radius: 2px;
+    padding: 1px 3px;
+    font-size: 7px;
+    font-weight: bold;
+    color: #333;
+}
+
+.edit-buttons {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.save-btn, .cancel-btn {
+    border: none;
+    border-radius: 2px;
+    padding: 1px 4px;
+    font-size: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.save-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.cancel-btn {
+    background: #f44336;
+    color: white;
+}
+
+.save-btn:hover {
+    background: #45a049;
+}
+
+.cancel-btn:hover {
+    background: #d32f2f;
+}
+
+.person-selector {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.person-selector .edit-select {
+    flex: 1;
+}
+
+.add-person-btn {
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 2px;
+    padding: 1px 3px;
+    font-size: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    height: fit-content;
+    min-width: 16px;
+}
+
+.add-person-btn:hover {
+    background: #45a049;
+}
+
 .school-leo,
 .school-anna-mia {
     background-color: #FFD700 !important;

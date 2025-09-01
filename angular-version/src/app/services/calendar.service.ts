@@ -35,6 +35,8 @@ export class CalendarService {
     } else if (action.type === 'add' && action.newPosition) {
       const key = this.positionToKey(action.newPosition);
       this.removeActivityDirect(action.activityId, key);
+    } else if (action.type === 'edit' && action.originalData) {
+      this.updateActivityDirect(action.activityId, action.originalData);
     }
   }
 
@@ -46,6 +48,8 @@ export class CalendarService {
     } else if (action.type === 'add' && action.newPosition && action.originalData) {
       const key = this.positionToKey(action.newPosition);
       this.addActivityDirect(action.originalData, key);
+    } else if (action.type === 'edit' && action.newData) {
+      this.updateActivityDirect(action.activityId, action.newData);
     }
   }
 
@@ -267,5 +271,52 @@ export class CalendarService {
     
     this.calendarSubject.next(this.calendarData);
     return true;
+  }
+
+  updateActivity(activityId: string, updates: Partial<Activity>): boolean {
+    let found = false;
+    
+    this.calendarData.cells.forEach(cell => {
+      const activityIndex = cell.activities.findIndex(a => a.id === activityId);
+      if (activityIndex !== -1) {
+        const originalActivity = { ...cell.activities[activityIndex] };
+        cell.activities[activityIndex] = { ...cell.activities[activityIndex], ...updates };
+        
+        if (this.historyService) {
+          this.historyService.addAction({
+            type: 'edit',
+            activityId,
+            originalData: originalActivity,
+            newData: cell.activities[activityIndex]
+          });
+        }
+        
+        found = true;
+      }
+    });
+    
+    if (found) {
+      this.calendarSubject.next(this.calendarData);
+    }
+    
+    return found;
+  }
+
+  updateActivityDirect(activityId: string, activityData: Activity): boolean {
+    let found = false;
+    
+    this.calendarData.cells.forEach(cell => {
+      const activityIndex = cell.activities.findIndex(a => a.id === activityId);
+      if (activityIndex !== -1) {
+        cell.activities[activityIndex] = { ...activityData };
+        found = true;
+      }
+    });
+    
+    if (found) {
+      this.calendarSubject.next(this.calendarData);
+    }
+    
+    return found;
   }
 }

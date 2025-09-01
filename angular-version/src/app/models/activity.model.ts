@@ -6,7 +6,7 @@ export interface Activity {
   notes?: string;
 }
 
-export type Person = 'anna' | 'mia' | 'leo';
+export type Person = string;
 
 export interface TimeSlot {
   timeRange: string;
