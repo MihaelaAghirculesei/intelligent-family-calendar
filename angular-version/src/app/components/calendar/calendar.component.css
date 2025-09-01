@@ -230,7 +230,7 @@ h1 {
     margin-top: 2px;
 }
 
-.save-btn, .cancel-btn {
+.save-btn, .cancel-btn, .undo-btn, .redo-btn {
     border: none;
     border-radius: 2px;
     padding: 1px 4px;
@@ -255,6 +255,21 @@ h1 {
 
 .cancel-btn:hover {
     background: #d32f2f;
+}
+
+.undo-btn, .redo-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.undo-btn:disabled, .redo-btn:disabled {
+    background: #dee2e6;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.undo-btn:hover:not(:disabled), .redo-btn:hover:not(:disabled) {
+    background: #5a6268;
 }
 
 .person-selector {

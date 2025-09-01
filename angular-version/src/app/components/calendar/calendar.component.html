@@ -95,6 +95,14 @@
                       </button>
                     </div>
                     <div class="edit-buttons">
+                      <button (click)="onUndo()" 
+                              [disabled]="!(canUndo$ | async)"
+                              class="undo-btn"
+                              title="Annulla">↶</button>
+                      <button (click)="onRedo()" 
+                              [disabled]="!(canRedo$ | async)"
+                              class="redo-btn"
+                              title="Ripeti">↷</button>
                       <button (click)="saveEdit()" class="save-btn">✓</button>
                       <button (click)="cancelEdit()" class="cancel-btn">✕</button>
                     </div>
