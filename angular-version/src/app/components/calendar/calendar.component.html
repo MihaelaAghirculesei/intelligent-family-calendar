@@ -103,6 +103,9 @@
                               [disabled]="!(canRedo$ | async)"
                               class="redo-btn"
                               title="Ripeti">↷</button>
+                      <button (click)="deleteActivity()" 
+                              class="delete-btn"
+                              title="Elimina attività">🗑️</button>
                       <button (click)="saveEdit()" class="save-btn">✓</button>
                       <button (click)="cancelEdit()" class="cancel-btn">✕</button>
                     </div>

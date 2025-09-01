@@ -37,6 +37,9 @@ export class CalendarService {
       this.removeActivityDirect(action.activityId, key);
     } else if (action.type === 'edit' && action.originalData) {
       this.updateActivityDirect(action.activityId, action.originalData);
+    } else if (action.type === 'remove' && action.originalData && action.originalPosition) {
+      const cellKey = this.positionToKey(action.originalPosition);
+      this.addActivityDirect(action.originalData, cellKey);
     }
   }
 
@@ -50,6 +53,9 @@ export class CalendarService {
       this.addActivityDirect(action.originalData, key);
     } else if (action.type === 'edit' && action.newData) {
       this.updateActivityDirect(action.activityId, action.newData);
+    } else if (action.type === 'remove' && action.originalPosition) {
+      const cellKey = this.positionToKey(action.originalPosition);
+      this.removeActivityDirect(action.activityId, cellKey);
     }
   }
 
@@ -309,6 +315,39 @@ export class CalendarService {
       const activityIndex = cell.activities.findIndex(a => a.id === activityId);
       if (activityIndex !== -1) {
         cell.activities[activityIndex] = { ...activityData };
+        found = true;
+      }
+    });
+    
+    if (found) {
+      this.calendarSubject.next(this.calendarData);
+    }
+    
+    return found;
+  }
+
+  deleteActivity(activityId: string): boolean {
+    let found = false;
+    let deletedActivity: Activity | null = null;
+    let cellKey = '';
+    
+    this.calendarData.cells.forEach((cell, key) => {
+      const activityIndex = cell.activities.findIndex(a => a.id === activityId);
+      if (activityIndex !== -1) {
+        deletedActivity = { ...cell.activities[activityIndex] };
+        cellKey = key;
+        
+        if (this.historyService) {
+          const position = this.parseKey(cellKey);
+          this.historyService.addAction({
+            type: 'remove',
+            activityId,
+            originalData: deletedActivity,
+            originalPosition: position
+          });
+        }
+        
+        cell.activities.splice(activityIndex, 1);
         found = true;
       }
     });

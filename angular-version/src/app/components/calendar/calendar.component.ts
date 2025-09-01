@@ -157,4 +157,14 @@ export class CalendarComponent implements OnInit {
 
   onAddPersonCancelled(): void {
   }
+
+  deleteActivity(): void {
+    if (!this.editingActivityId) return;
+    
+    const confirmed = confirm('Sei sicuro di voler eliminare questa attività?');
+    if (confirmed) {
+      this.calendarService.deleteActivity(this.editingActivityId);
+      this.cancelEdit();
+    }
+  }
 }
