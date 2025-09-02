@@ -15,7 +15,7 @@ export class CalendarService {
 
   constructor(private personService: PersonService) {
     this.calendarData = this.initializeCalendar();
-    this.loadInitialData();
+    this.loadCalendarData();
   }
 
   setHistoryService(historyService: HistoryService): void {
@@ -129,7 +129,7 @@ export class CalendarService {
     this.placeActivity('scout', '17:15-19:15', 'friday');
     this.placeActivity('piscina-mia', '19:00-21:30', 'monday');
     this.placeActivity('piscina-leo', '19:00-21:30', 'tuesday');
-    this.calendarSubject.next(this.calendarData);
+    this.notifyChange();
   }
 
   private placeActivity(activityId: string, timeSlot: string, day: WeekDay): void {
@@ -187,7 +187,7 @@ export class CalendarService {
     const activity = fromCell.activities.splice(activityIndex, 1)[0];
     toCell.activities.push(activity);
     
-    this.calendarSubject.next(this.calendarData);
+    this.notifyChange();
     return true;
   }
 
@@ -238,7 +238,7 @@ export class CalendarService {
     }
 
     cell.activities.push(activity);
-    this.calendarSubject.next(this.calendarData);
+    this.notifyChange();
     return true;
   }
 
@@ -247,7 +247,7 @@ export class CalendarService {
     if (!cell) return false;
     
     cell.activities.push(activity);
-    this.calendarSubject.next(this.calendarData);
+    this.notifyChange();
     return true;
   }
 
@@ -259,7 +259,7 @@ export class CalendarService {
     if (activityIndex === -1) return false;
     
     cell.activities.splice(activityIndex, 1);
-    this.calendarSubject.next(this.calendarData);
+    this.notifyChange();
     return true;
   }
 
@@ -275,7 +275,7 @@ export class CalendarService {
     const activity = fromCell.activities.splice(activityIndex, 1)[0];
     toCell.activities.push(activity);
     
-    this.calendarSubject.next(this.calendarData);
+    this.notifyChange();
     return true;
   }
 
@@ -302,7 +302,7 @@ export class CalendarService {
     });
     
     if (found) {
-      this.calendarSubject.next(this.calendarData);
+      this.notifyChange();
     }
     
     return found;
@@ -320,7 +320,7 @@ export class CalendarService {
     });
     
     if (found) {
-      this.calendarSubject.next(this.calendarData);
+      this.notifyChange();
     }
     
     return found;
@@ -353,9 +353,53 @@ export class CalendarService {
     });
     
     if (found) {
-      this.calendarSubject.next(this.calendarData);
+      this.notifyChange();
     }
     
     return found;
+  }
+
+  private saveCalendarData(): void {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const dataToSave = {
+          cells: Array.from(this.calendarData.cells.entries()),
+          timeSlots: this.calendarData.timeSlots,
+          weekDays: this.calendarData.weekDays,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('calendarData', JSON.stringify(dataToSave));
+      } catch (e) {
+        console.error('Failed to save calendar data:', e);
+      }
+    }
+  }
+
+  private loadCalendarData(): void {
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem('calendarData');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          
+          // Restore the Map from array of entries
+          this.calendarData.cells = new Map(parsed.cells);
+          
+          console.log('Calendar data loaded from localStorage');
+          this.notifyChange();
+          return;
+        } catch (e) {
+          console.error('Failed to load calendar data:', e);
+        }
+      }
+    }
+    
+    // If no saved data or error, load initial data
+    this.loadInitialData();
+  }
+
+  private notifyChange(): void {
+    this.calendarSubject.next(this.calendarData);
+    this.saveCalendarData();
   }
 }

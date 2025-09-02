@@ -8,18 +8,22 @@ import { HistoryService } from '../../services/history.service';
 import { CalendarData, WeekDay, Activity, Person } from '../../models/activity.model';
 import { AddActivityComponent } from '../add-activity/add-activity.component';
 import { AddPersonComponent } from '../add-person/add-person.component';
+import { SaveTemplateComponent } from '../save-template/save-template.component';
 import { PersonService, PersonData } from '../../services/person.service';
+import { TemplateService } from '../../services/template.service';
+import { SaveTemplateData } from '../../models/template.model';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent],
+  imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
 export class CalendarComponent implements OnInit {
   @ViewChild('addActivityComponent') addActivityComponent!: AddActivityComponent;
   @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
+  @ViewChild('saveTemplateComponent') saveTemplateComponent!: SaveTemplateComponent;
   
   calendarData$!: Observable<CalendarData>;
   canUndo$!: Observable<boolean>;
@@ -44,7 +48,8 @@ export class CalendarComponent implements OnInit {
   constructor(
     private calendarService: CalendarService,
     private historyService: HistoryService,
-    private personService: PersonService
+    private personService: PersonService,
+    private templateService: TemplateService
   ) {}
 
   ngOnInit(): void {
@@ -166,5 +171,19 @@ export class CalendarComponent implements OnInit {
       this.calendarService.deleteActivity(this.editingActivityId);
       this.cancelEdit();
     }
+  }
+
+  showSaveTemplateDialog(): void {
+    this.saveTemplateComponent.show();
+  }
+
+  onTemplateSaved(templateData: SaveTemplateData): void {
+    this.calendarService.calendar$.subscribe(calendarData => {
+      const savedTemplate = this.templateService.saveCurrentWeekAsTemplate(calendarData, templateData);
+      alert(`Template "${savedTemplate.name}" salvato con successo! 💾\n\nAttività salvate: ${savedTemplate.activities.length}`);
+    }).unsubscribe();
+  }
+
+  onSaveTemplateCancelled(): void {
   }
 }

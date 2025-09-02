@@ -51,6 +51,22 @@ h1 {
     background-color: #45a049;
 }
 
+.template-btn {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.template-btn:hover {
+    background-color: #1976D2;
+}
+
 .bottom-controls {
     display: flex;
     gap: 10px;
