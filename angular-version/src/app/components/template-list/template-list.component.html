@@ -17,12 +17,20 @@
             <h3 class="template-name">{{ template.name }}</h3>
             <p class="template-description" *ngIf="template.description">{{ template.description }}</p>
           </div>
-          <button 
-            class="delete-btn" 
-            (click)="deleteTemplate(template.id)"
-            title="Elimina template">
-            🗑️
-          </button>
+          <div class="template-actions">
+            <button 
+              class="apply-btn" 
+              (click)="applyTemplate(template)"
+              title="Applica template al calendario">
+              ✅ Applica
+            </button>
+            <button 
+              class="delete-btn" 
+              (click)="deleteTemplate(template.id)"
+              title="Elimina template">
+              🗑️
+            </button>
+          </div>
         </div>
         
         <div class="template-details">

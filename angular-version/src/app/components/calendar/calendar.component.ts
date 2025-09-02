@@ -198,6 +198,16 @@ export class CalendarComponent implements OnInit {
     this.templateListComponent.show();
   }
 
+  onTemplateApplied(template: any): void {
+    this.calendarService.applyTemplate(template.activities);
+    
+    // Give feedback after applying
+    setTimeout(() => {
+      const totalActivities = template.activities.length;
+      alert(`Template "${template.name}" applicato con successo! ✅\n\n📋 ${totalActivities} attività caricate nel calendario\n\n🎯 Le attività sono state distribuite automaticamente sui giorni della settimana.`);
+    }, 100);
+  }
+
   onTemplateListCancelled(): void {
   }
 }

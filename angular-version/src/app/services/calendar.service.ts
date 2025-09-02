@@ -359,6 +359,139 @@ export class CalendarService {
     return found;
   }
 
+  applyTemplate(templateActivities: any[]): void {
+    console.log(`🔄 Applying template with ${templateActivities.length} activities`);
+
+    // Save current state for undo before clearing
+    if (this.historyService) {
+      // Create a snapshot of all current activities
+      const currentActivities: any[] = [];
+      this.calendarData.cells.forEach((cell, cellKey) => {
+        cell.activities.forEach(activity => {
+          const [timeSlot, day] = cellKey.split('-');
+          currentActivities.push({
+            ...activity,
+            timeSlot,
+            day
+          });
+        });
+      });
+      
+      this.historyService.addAction({
+        type: 'edit', // Use edit type which is supported
+        activityId: 'template-clear',
+        originalData: { activities: currentActivities },
+        newData: { activities: templateActivities }
+      });
+    }
+
+    // Clear all current activities
+    this.calendarData.cells.forEach(cell => {
+      cell.activities = [];
+    });
+
+    // Convert template activities back to regular activities and add to calendar
+    let addedCount = 0;
+    let skippedCount = 0;
+    const skippedActivities: string[] = [];
+    
+    templateActivities.forEach((templateActivity, index) => {
+      const activity: Activity = {
+        id: this.generateId(),
+        title: templateActivity.title,
+        person: templateActivity.person,
+        timeRange: templateActivity.timeRange
+      };
+
+      // RECONSTRUCT correct timeSlot and day from corrupted template data
+      // Template has wrong parsing: timeSlot='7:45', day='13:10' 
+      // Should be: timeSlot='7:45-13:10', day='monday'
+      
+      let correctTimeSlot: string;
+      let correctDay: string;
+      
+      // Try to reconstruct from original timeSlot and day in template
+      if (templateActivity.timeSlot && templateActivity.day) {
+        // Check if timeSlot looks incomplete (just time like '7:45')
+        if (!templateActivity.timeSlot.includes('-')) {
+          // Reconstruct full timeSlot by combining with day part
+          correctTimeSlot = `${templateActivity.timeSlot}-${templateActivity.day}`;
+          
+          // SMART DISTRIBUTION: Since original days are lost, distribute activities across weekdays
+          const availableKeys = Array.from(this.calendarData.cells.keys());
+          const matchingKeys = availableKeys.filter(key => key.startsWith(correctTimeSlot + '-'));
+          
+          if (matchingKeys.length > 0) {
+            // Distribute across different days instead of always using the first one
+            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const availableWeekdays = matchingKeys.filter(key => {
+              const parts = key.split('-');
+              return weekdays.includes(parts[2]);
+            });
+            
+            if (availableWeekdays.length > 0) {
+              // Use activity index to distribute across days
+              const dayIndex = index % availableWeekdays.length;
+              const selectedKey = availableWeekdays[dayIndex];
+              correctDay = selectedKey.split('-')[2];
+              // console.log(`🎯 Smart distribution: Activity ${index + 1} → ${correctTimeSlot}-${correctDay}`);
+            } else {
+              // Fallback to weekend if no weekdays
+              const parts = matchingKeys[0].split('-');
+              correctDay = parts[2];
+              console.log(`📅 Weekend fallback: ${correctTimeSlot}-${correctDay}`);
+            }
+          } else {
+            // Fallback: use first available day for this timeSlot
+            correctDay = 'monday';
+            console.log(`⚠️ Fallback: Using ${correctTimeSlot}-${correctDay}`);
+          }
+        } else {
+          // TimeSlot seems correct
+          correctTimeSlot = templateActivity.timeSlot;
+          correctDay = templateActivity.day;
+        }
+      } else {
+        // Fallback for completely broken data
+        correctTimeSlot = '15:00-16:00'; // Safe default
+        correctDay = 'monday';
+        console.log(`❌ Broken template data, using fallback: ${correctTimeSlot}-${correctDay}`);
+      }
+      
+      const cellKey = `${correctTimeSlot}-${correctDay}`;
+      const cell = this.calendarData.cells.get(cellKey);
+      
+      if (cell) {
+        cell.activities.push(activity);
+        addedCount++;
+      } else {
+        // Try to find alternative cell with same time or day
+        const altCellKey = this.findAlternativeCell(templateActivity.timeSlot, templateActivity.day);
+        if (altCellKey) {
+          const altCell = this.calendarData.cells.get(altCellKey);
+          if (altCell) {
+            altCell.activities.push(activity);
+            addedCount++;
+            console.log(`🔄 Moved activity "${templateActivity.title}" from ${cellKey} to ${altCellKey}`);
+          }
+        } else {
+          skippedCount++;
+          skippedActivities.push(templateActivity.title);
+          console.warn(`⚠️ Skipped activity: "${templateActivity.title}" (slot ${cellKey} not available)`);
+        }
+      }
+    });
+
+    // Show user-friendly result
+    if (skippedCount > 0) {
+      console.warn(`⚠️ Template partially applied: ${addedCount} loaded, ${skippedCount} skipped`);
+      console.warn('📋 Skipped activities:', skippedActivities);
+    } else {
+      console.log(`✅ Template fully applied: ${addedCount} activities loaded`);
+    }
+    this.notifyChange();
+  }
+
   private saveCalendarData(): void {
     if (typeof localStorage !== 'undefined') {
       try {
@@ -396,6 +529,49 @@ export class CalendarService {
     
     // If no saved data or error, load initial data
     this.loadInitialData();
+  }
+
+  private findAlternativeCell(timeSlot: string, day: string): string | null {
+    // Try to find best alternative cell for missing slot
+    
+    // First: try same day, different time slot  
+    const availableKeys = Array.from(this.calendarData.cells.keys());
+    const sameDayKeys = availableKeys.filter(key => key.endsWith(`-${day}`));
+    
+    if (sameDayKeys.length > 0) {
+      // Prefer afternoon slots (15:00+) for flexibility
+      const afternoonKeys = sameDayKeys.filter(key => {
+        const timepart = key.split('-')[0];
+        const hour = parseInt(timepart.split(':')[0]);
+        return hour >= 15;
+      });
+      
+      if (afternoonKeys.length > 0) {
+        return afternoonKeys[0]; // Return first afternoon slot
+      }
+      
+      return sameDayKeys[0]; // Return first available slot on same day
+    }
+    
+    // Second: try same time slot, different day (weekday priority)
+    const sameTimeKeys = availableKeys.filter(key => key.startsWith(`${timeSlot}-`));
+    if (sameTimeKeys.length > 0) {
+      // Prefer weekdays over weekends
+      const weekdayKeys = sameTimeKeys.filter(key => 
+        !key.endsWith('-saturday') && !key.endsWith('-sunday'));
+      
+      if (weekdayKeys.length > 0) {
+        return weekdayKeys[0];
+      }
+      
+      return sameTimeKeys[0];
+    }
+    
+    return null; // No suitable alternative found
+  }
+
+  private generateId(): string {
+    return 'activity_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
   private notifyChange(): void {

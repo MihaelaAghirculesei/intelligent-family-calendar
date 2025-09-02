@@ -146,6 +146,7 @@
     #saveTemplateComponent></app-save-template>
     
   <app-template-list
+    (templateApplied)="onTemplateApplied($event)"
     (cancelled)="onTemplateListCancelled()"
     #templateListComponent></app-template-list>
 </div>
