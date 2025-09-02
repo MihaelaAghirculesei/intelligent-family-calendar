@@ -67,6 +67,22 @@ h1 {
     background-color: #1976D2;
 }
 
+.template-list-btn {
+    background-color: #9C27B0;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.template-list-btn:hover {
+    background-color: #7B1FA2;
+}
+
 .bottom-controls {
     display: flex;
     gap: 10px;
