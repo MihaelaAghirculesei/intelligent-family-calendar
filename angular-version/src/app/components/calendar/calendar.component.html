@@ -5,24 +5,27 @@
       <button class="add-btn" (click)="showAddActivityForm()">➕ Aggiungi Attività</button>
       <button class="template-btn" (click)="showSaveTemplateDialog()">💾 Salva Template</button>
       <button class="template-list-btn" (click)="showTemplateListDialog()">📋 Template ({{ templateCount }})</button>
-      <button class="export-btn">📄 Esporta PDF</button>
+      <button class="export-btn" [disabled]="isExportingPdf" (click)="exportPdf()">
+        {{ isExportingPdf ? '⏳ Esportazione...' : '📄 Esporta PDF' }}
+      </button>
     </div>
   </div>
 
-  <div class="legend">
-    <div
-      *ngFor="let person of persons"
-      class="legend-item"
-      [style.background-color]="person.color">
-      {{ person.name }}
+  <div #printArea>
+    <div class="legend">
+      <div
+        *ngFor="let person of persons"
+        class="legend-item"
+        [style.background-color]="person.color">
+        {{ person.name }}
+      </div>
     </div>
-  </div>
 
-  <div class="calendar-grid">
-    <div class="grid-header">
-      <div class="hour-gutter-header"></div>
-      <div class="day-header" *ngFor="let label of weekDayLabels">{{ label }}</div>
-    </div>
+    <div class="calendar-grid">
+      <div class="grid-header">
+        <div class="hour-gutter-header"></div>
+        <div class="day-header" *ngFor="let label of weekDayLabels">{{ label }}</div>
+      </div>
 
     <div class="grid-body" [style.height.px]="gridHeightPx" cdkDropListGroup>
       <div class="hour-gutter">
@@ -97,6 +100,7 @@
           </div>
         </div>
       </div>
+    </div>
     </div>
   </div>
 
