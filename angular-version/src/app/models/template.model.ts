@@ -14,7 +14,6 @@ export interface TemplateActivity {
   title: string;
   person: string;
   timeRange?: string;
-  timeSlot: string;
   day: string;
   notes?: string;
 }

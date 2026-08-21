@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { CalendarService } from '../../services/calendar.service';
 import { HistoryService } from '../../services/history.service';
 import { CalendarData, WeekDay, Activity, Person } from '../../models/activity.model';
@@ -13,6 +13,16 @@ import { TemplateListComponent } from '../template-list/template-list.component'
 import { PersonService, PersonData } from '../../services/person.service';
 import { TemplateService } from '../../services/template.service';
 import { SaveTemplateData } from '../../models/template.model';
+
+interface ActivityBlock {
+  activity: Activity;
+  style: {
+    top: string;
+    height: string;
+    left: string;
+    width: string;
+  };
+}
 
 @Component({
   selector: 'app-calendar',
@@ -26,42 +36,54 @@ export class CalendarComponent implements OnInit {
   @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
   @ViewChild('saveTemplateComponent') saveTemplateComponent!: SaveTemplateComponent;
   @ViewChild('templateListComponent') templateListComponent!: TemplateListComponent;
-  
+
   calendarData$!: Observable<CalendarData>;
   canUndo$!: Observable<boolean>;
   canRedo$!: Observable<boolean>;
   connectedDropLists: string[] = [];
   persons: any[] = [];
   templateCount = 0;
-  
+
   editingActivityId: string | null = null;
   editForm: {
     title: string;
     timeRange: string;
     person: Person;
   } = { title: '', timeRange: '', person: 'anna' };
-  
+
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   weekDayLabels = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
-  timeSlots = [
-    '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00', 
-    '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
-  ];
+
+  // Continuous time grid, like Google Calendar: activities are positioned
+  // by their real start/end time instead of a fixed row per time slot.
+  readonly gridStartHour = 7;
+  readonly gridEndHour = 22;
+  readonly pxPerMinute = 1; // 60px per hour
+  readonly gridHeightPx = (this.gridEndHour - this.gridStartHour) * 60 * this.pxPerMinute;
+  hourMarks: number[] = [];
+
+  dayBlocks: Record<WeekDay, ActivityBlock[]> = {
+    monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: []
+  };
 
   constructor(
     private calendarService: CalendarService,
     private historyService: HistoryService,
     private personService: PersonService,
     private templateService: TemplateService
-  ) {}
+  ) {
+    for (let h = this.gridStartHour; h <= this.gridEndHour; h++) {
+      this.hourMarks.push(h);
+    }
+  }
 
   ngOnInit(): void {
     this.calendarData$ = this.calendarService.calendar$;
     this.canUndo$ = this.historyService.canUndo$;
     this.canRedo$ = this.historyService.canRedo$;
-    
+
     this.calendarService.setHistoryService(this.historyService);
-    
+
     this.personService.persons$.subscribe(persons => {
       this.persons = persons;
     });
@@ -70,45 +92,131 @@ export class CalendarComponent implements OnInit {
       this.templateCount = templates.length;
     });
 
-    this.connectedDropLists = [];
-    for (const timeSlot of this.timeSlots) {
-      for (const day of this.weekDays) {
-        this.connectedDropLists.push(this.getCellKey(timeSlot, day));
-      }
-    }
+    this.connectedDropLists = [...this.weekDays];
+
+    this.calendarData$.subscribe(calendarData => {
+      this.recomputeLayout(calendarData);
+    });
   }
 
-  getCellKey(timeSlot: string, day: WeekDay): string {
-    return this.calendarService.getCellKey(timeSlot, day);
-  }
-
-  getCell(calendarData: CalendarData, timeSlot: string, day: WeekDay) {
-    return calendarData.cells.get(this.getCellKey(timeSlot, day));
+  getCell(calendarData: CalendarData, day: WeekDay) {
+    return calendarData.cells.get(day);
   }
 
   getPersonColor(person: string): string {
     return this.personService.getPersonColor(person);
   }
 
-  getSchoolTime(timeSlot: string, day: WeekDay): string {
-    if (timeSlot === '7:45-13:10') return '7:45-13:10';
-    if (timeSlot === '8:15-14:00' && day === 'friday') return '8:15-14:00';
-    if (timeSlot === '14:00-15:00') return '8:15-15:00';
-    if (timeSlot === '15:00-16:00') return '8:15-16:00';
-    return timeSlot;
+  hourLabel(hour: number): string {
+    return `${hour}:00`;
   }
 
-
-  onDrop(event: CdkDragDrop<Activity[]>, timeSlot: string, day: WeekDay): void {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      const activity: Activity = event.item.data;
-      const fromKey = event.previousContainer.id;
-      const toKey = this.getCellKey(timeSlot, day);
-      
-      this.calendarService.moveActivity(activity.id, fromKey, toKey);
+  getBlockStyle(block: ActivityBlock): { top: string; height: string; left: string; width: string } {
+    if (this.editingActivityId === block.activity.id) {
+      return { top: block.style.top, height: '150px', left: '2px', width: 'calc(100% - 4px)' };
     }
+    return block.style;
+  }
+
+  private parseTimeRange(timeRange: string | undefined): { start: number; end: number } | null {
+    if (!timeRange) return null;
+    const match = timeRange.match(/^\s*(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\s*$/);
+    if (!match) return null;
+
+    const start = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+    let end = parseInt(match[3], 10) * 60 + parseInt(match[4], 10);
+    if (end <= start) end = start + 30;
+
+    return { start, end };
+  }
+
+  private recomputeLayout(calendarData: CalendarData): void {
+    const gridStart = this.gridStartHour * 60;
+    const gridEnd = this.gridEndHour * 60;
+
+    this.weekDays.forEach(day => {
+      const activities = calendarData.cells.get(day)?.activities || [];
+
+      type Item = { activity: Activity; start: number; end: number };
+      const items: Item[] = activities
+        .map(activity => {
+          const parsed = this.parseTimeRange(activity.timeRange);
+          return {
+            activity,
+            start: parsed ? parsed.start : gridStart,
+            end: parsed ? parsed.end : gridStart + 30
+          };
+        })
+        .sort((a, b) => a.start - b.start || a.end - b.end);
+
+      const blocks: ActivityBlock[] = [];
+      let cluster: Item[] = [];
+      let clusterEnd = -Infinity;
+
+      const flushCluster = () => {
+        if (cluster.length === 0) return;
+
+        // Greedy column assignment for overlapping activities within this cluster.
+        const columnEnds: number[] = [];
+        const colOf: number[] = [];
+        cluster.forEach(item => {
+          let placedCol = -1;
+          for (let c = 0; c < columnEnds.length; c++) {
+            if (item.start >= columnEnds[c]) {
+              columnEnds[c] = item.end;
+              placedCol = c;
+              break;
+            }
+          }
+          if (placedCol === -1) {
+            columnEnds.push(item.end);
+            placedCol = columnEnds.length - 1;
+          }
+          colOf.push(placedCol);
+        });
+
+        const totalCols = columnEnds.length;
+        cluster.forEach((item, i) => {
+          const clampedStart = Math.max(item.start, gridStart);
+          const clampedEnd = Math.min(item.end, gridEnd);
+          const top = (clampedStart - gridStart) * this.pxPerMinute;
+          const height = Math.max((clampedEnd - clampedStart) * this.pxPerMinute, 16);
+          const widthPct = 100 / totalCols;
+          const leftPct = widthPct * colOf[i];
+
+          blocks.push({
+            activity: item.activity,
+            style: {
+              top: `${top}px`,
+              height: `${height}px`,
+              left: `calc(${leftPct}% + 1px)`,
+              width: `calc(${widthPct}% - 2px)`
+            }
+          });
+        });
+
+        cluster = [];
+      };
+
+      items.forEach(item => {
+        if (cluster.length > 0 && item.start >= clusterEnd) {
+          flushCluster();
+        }
+        cluster.push(item);
+        clusterEnd = Math.max(clusterEnd, item.end);
+      });
+      flushCluster();
+
+      this.dayBlocks[day] = blocks;
+    });
+  }
+
+  onDrop(event: CdkDragDrop<Activity[]>, day: WeekDay): void {
+    if (event.previousContainer === event.container) return;
+
+    const activity: Activity = event.item.data;
+    const fromDay = event.previousContainer.id as WeekDay;
+    this.calendarService.moveActivity(activity.id, fromDay, day);
   }
 
   onUndo(): void {
@@ -123,8 +231,8 @@ export class CalendarComponent implements OnInit {
     this.addActivityComponent.show();
   }
 
-  onActivityAdded(event: {activity: Activity, timeSlot: string, day: WeekDay}): void {
-    this.calendarService.addActivity(event.activity, event.timeSlot, event.day);
+  onActivityAdded(event: {activity: Activity, day: WeekDay}): void {
+    this.calendarService.addActivity(event.activity, event.day);
   }
 
   onAddActivityCancelled(): void {
@@ -141,13 +249,13 @@ export class CalendarComponent implements OnInit {
 
   saveEdit(): void {
     if (!this.editingActivityId) return;
-    
+
     const updates: Partial<Activity> = {
       title: this.editForm.title,
       timeRange: this.editForm.timeRange,
       person: this.editForm.person
     };
-    
+
     this.calendarService.updateActivity(this.editingActivityId, updates);
     this.cancelEdit();
   }
@@ -172,7 +280,7 @@ export class CalendarComponent implements OnInit {
 
   deleteActivity(): void {
     if (!this.editingActivityId) return;
-    
+
     const confirmed = confirm('Sei sicuro di voler eliminare questa attività?');
     if (confirmed) {
       this.calendarService.deleteActivity(this.editingActivityId);
@@ -200,11 +308,10 @@ export class CalendarComponent implements OnInit {
 
   onTemplateApplied(template: any): void {
     this.calendarService.applyTemplate(template.activities);
-    
-    // Give feedback after applying
+
     setTimeout(() => {
       const totalActivities = template.activities.length;
-      alert(`Template "${template.name}" applicato con successo! ✅\n\n📋 ${totalActivities} attività caricate nel calendario\n\n🎯 Le attività sono state distribuite automaticamente sui giorni della settimana.`);
+      alert(`Template "${template.name}" applicato con successo! ✅\n\n📋 ${totalActivities} attività caricate nel calendario`);
     }, 100);
   }
 

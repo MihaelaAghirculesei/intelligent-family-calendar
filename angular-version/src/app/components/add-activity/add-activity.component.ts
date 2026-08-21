@@ -14,7 +14,7 @@ import { AddPersonComponent } from '../add-person/add-person.component';
 })
 export class AddActivityComponent implements OnInit {
   @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
-  @Output() activityAdded = new EventEmitter<{activity: Activity, timeSlot: string, day: WeekDay}>();
+  @Output() activityAdded = new EventEmitter<{activity: Activity, day: WeekDay}>();
   @Output() cancelled = new EventEmitter<void>();
 
   activityForm: FormGroup;
@@ -29,11 +29,6 @@ export class AddActivityComponent implements OnInit {
     { value: 'friday', label: 'Venerdì' },
     { value: 'saturday', label: 'Sabato' },
     { value: 'sunday', label: 'Domenica' }
-  ];
-
-  timeSlots = [
-    '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00',
-    '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
   ];
 
   constructor(private fb: FormBuilder, private personService: PersonService) {
@@ -65,56 +60,21 @@ export class AddActivityComponent implements OnInit {
   onSubmit(): void {
     if (this.activityForm.valid) {
       const formValue = this.activityForm.value;
-      
-      const customTimeSlot = `${formValue.startTime}-${formValue.endTime}`;
-      
+
       const activity: Activity = {
         id: Date.now().toString(),
         title: formValue.title,
         person: formValue.person,
-        timeRange: customTimeSlot
+        timeRange: `${formValue.startTime}-${formValue.endTime}`
       };
 
       this.activityAdded.emit({
         activity,
-        timeSlot: this.findBestTimeSlot(formValue.startTime),
         day: formValue.day
       });
 
       this.hide();
     }
-  }
-
-  private findBestTimeSlot(startTime: string): string {
-
-    const timeSlots = [
-      '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00',
-      '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
-    ];
-    
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const startMinutes = hours * 60 + minutes;
-    
-    let bestMatch = timeSlots[0];
-    let smallestDiff = Math.abs(this.timeToMinutes('7:45') - startMinutes);
-    
-    for (const slot of timeSlots) {
-      const slotStart = slot.split('-')[0];
-      const slotMinutes = this.timeToMinutes(slotStart);
-      const diff = Math.abs(slotMinutes - startMinutes);
-      
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
-        bestMatch = slot;
-      }
-    }
-    
-    return bestMatch;
-  }
-
-  private timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
   }
 
   getFieldError(fieldName: string): string {

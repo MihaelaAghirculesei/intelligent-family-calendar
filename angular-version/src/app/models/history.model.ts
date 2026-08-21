@@ -9,9 +9,6 @@ export interface HistoryAction {
 }
 
 export interface CellPosition {
-  row: number;
-  col: number;
-  timeSlot: string;
   day: string;
 }
 

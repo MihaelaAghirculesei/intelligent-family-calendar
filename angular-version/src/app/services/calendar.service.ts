@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Activity, CalendarData, CalendarCell, Person, WeekDay } from '../models/activity.model';
+import { Activity, CalendarData, CalendarCell, WeekDay } from '../models/activity.model';
 import { HistoryService } from './history.service';
 import { PersonService } from './person.service';
+import { TemplateActivity } from '../models/template.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,7 @@ export class CalendarService {
 
   setHistoryService(historyService: HistoryService): void {
     this.historyService = historyService;
-    
+
     historyService.setCallbacks(
       (action) => this.handleUndo(action),
       (action) => this.handleRedo(action)
@@ -29,38 +30,26 @@ export class CalendarService {
 
   private handleUndo(action: any): void {
     if (action.type === 'move' && action.originalPosition && action.newPosition) {
-      const fromKey = this.positionToKey(action.newPosition);
-      const toKey = this.positionToKey(action.originalPosition);
-      this.moveActivityDirect(action.activityId, fromKey, toKey);
+      this.moveActivityDirect(action.activityId, action.newPosition.day, action.originalPosition.day);
     } else if (action.type === 'add' && action.newPosition) {
-      const key = this.positionToKey(action.newPosition);
-      this.removeActivityDirect(action.activityId, key);
+      this.removeActivityDirect(action.activityId, action.newPosition.day);
     } else if (action.type === 'edit' && action.originalData) {
       this.updateActivityDirect(action.activityId, action.originalData);
     } else if (action.type === 'remove' && action.originalData && action.originalPosition) {
-      const cellKey = this.positionToKey(action.originalPosition);
-      this.addActivityDirect(action.originalData, cellKey);
+      this.addActivityDirect(action.originalData, action.originalPosition.day);
     }
   }
 
   private handleRedo(action: any): void {
     if (action.type === 'move' && action.originalPosition && action.newPosition) {
-      const fromKey = this.positionToKey(action.originalPosition);
-      const toKey = this.positionToKey(action.newPosition);
-      this.moveActivityDirect(action.activityId, fromKey, toKey);
+      this.moveActivityDirect(action.activityId, action.originalPosition.day, action.newPosition.day);
     } else if (action.type === 'add' && action.newPosition && action.originalData) {
-      const key = this.positionToKey(action.newPosition);
-      this.addActivityDirect(action.originalData, key);
+      this.addActivityDirect(action.originalData, action.newPosition.day);
     } else if (action.type === 'edit' && action.newData) {
       this.updateActivityDirect(action.activityId, action.newData);
     } else if (action.type === 'remove' && action.originalPosition) {
-      const cellKey = this.positionToKey(action.originalPosition);
-      this.removeActivityDirect(action.activityId, cellKey);
+      this.removeActivityDirect(action.activityId, action.originalPosition.day);
     }
-  }
-
-  private positionToKey(position: any): string {
-    return `${position.timeSlot}-${position.day}`;
   }
 
   get calendar$(): Observable<CalendarData> {
@@ -68,74 +57,37 @@ export class CalendarService {
   }
 
   private initializeCalendar(): CalendarData {
-    const timeSlots = [
-      '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00', 
-      '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
-    ];
-    
     const weekDays: WeekDay[] = [
       'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
     ];
 
-    const cells = new Map<string, CalendarCell>();
-    
-    timeSlots.forEach(timeSlot => {
-      weekDays.forEach(day => {
-        const key = `${timeSlot}-${day}`;
-        cells.set(key, {
-          timeSlot: { timeRange: timeSlot, day },
-          activities: [],
-          isSchoolTime: this.isSchoolTime(timeSlot, day),
-          schoolPerson: this.getSchoolPersons(timeSlot, day)
-        });
-      });
+    const cells = new Map<WeekDay, CalendarCell>();
+    weekDays.forEach(day => {
+      cells.set(day, { day, activities: [] });
     });
 
-    return { cells, timeSlots, weekDays };
-  }
-
-  private isSchoolTime(timeSlot: string, day: WeekDay): boolean {
-    if (day === 'saturday' || day === 'sunday') return false;
-    
-    const schoolTimes = [
-      '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00'
-    ];
-    
-    return schoolTimes.includes(timeSlot);
-  }
-
-  private getSchoolPersons(timeSlot: string, day: WeekDay): Person[] {
-    if (!this.isSchoolTime(timeSlot, day)) return [];
-    
-    if (timeSlot === '7:45-13:10') return ['leo'];
-    if (timeSlot === '8:15-14:00' && day === 'friday') return ['anna'];
-    if (timeSlot === '14:00-15:00' && (day === 'tuesday' || day === 'thursday')) return ['anna', 'mia'];
-    if (timeSlot === '14:00-15:00' && day === 'friday') return ['mia'];
-    if (timeSlot === '15:00-16:00' && (day === 'monday' || day === 'wednesday')) return ['anna', 'mia'];
-    
-    return [];
+    return { cells, weekDays };
   }
 
   private loadInitialData(): void {
-    this.placeActivity('chitarra', '7:45-13:10', 'wednesday');
-    this.placeActivity('danza-mer', '15:30-17:30', 'wednesday');
-    this.placeActivity('batteria', '15:30-17:30', 'thursday');
-    this.placeActivity('danza-ven', '15:30-17:30', 'friday');
-    this.placeActivity('danza-mart', '16:35-18:30', 'tuesday');
-    this.placeActivity('basket', '16:35-18:30', 'tuesday');
-    this.placeActivity('piano', '16:35-18:30', 'wednesday');
-    this.placeActivity('flauto-solo', '16:35-18:30', 'wednesday');
-    this.placeActivity('flauto-gruppo', '16:35-18:30', 'thursday');
-    this.placeActivity('scout', '17:15-19:15', 'friday');
-    this.placeActivity('piscina-mia', '19:00-21:30', 'monday');
-    this.placeActivity('piscina-leo', '19:00-21:30', 'tuesday');
+    this.placeActivity('chitarra', 'wednesday');
+    this.placeActivity('danza-mer', 'wednesday');
+    this.placeActivity('batteria', 'thursday');
+    this.placeActivity('danza-ven', 'friday');
+    this.placeActivity('danza-mart', 'tuesday');
+    this.placeActivity('basket', 'tuesday');
+    this.placeActivity('piano', 'wednesday');
+    this.placeActivity('flauto-solo', 'wednesday');
+    this.placeActivity('flauto-gruppo', 'thursday');
+    this.placeActivity('scout', 'friday');
+    this.placeActivity('piscina-mia', 'monday');
+    this.placeActivity('piscina-leo', 'tuesday');
     this.notifyChange();
   }
 
-  private placeActivity(activityId: string, timeSlot: string, day: WeekDay): void {
-    const key = `${timeSlot}-${day}`;
-    const cell = this.calendarData.cells.get(key);
-    
+  private placeActivity(activityId: string, day: WeekDay): void {
+    const cell = this.calendarData.cells.get(day);
+
     if (cell) {
       const activity = this.findActivityById(activityId);
       if (activity) {
@@ -159,72 +111,41 @@ export class CalendarService {
       'piscina-mia': { id: 'piscina-mia', title: 'Piscina', person: 'mia', timeRange: '19:00-20:00' },
       'piscina-leo': { id: 'piscina-leo', title: 'Piscina', person: 'leo', timeRange: '20:00-21:30' }
     };
-    
+
     return activityMap[id];
   }
 
-  moveActivity(activityId: string, fromKey: string, toKey: string): boolean {
-    const fromCell = this.calendarData.cells.get(fromKey);
-    const toCell = this.calendarData.cells.get(toKey);
-    
+  moveActivity(activityId: string, fromDay: WeekDay, toDay: WeekDay): boolean {
+    const fromCell = this.calendarData.cells.get(fromDay);
+    const toCell = this.calendarData.cells.get(toDay);
+
     if (!fromCell || !toCell) return false;
-    
+
     const activityIndex = fromCell.activities.findIndex(a => a.id === activityId);
     if (activityIndex === -1) return false;
 
     if (this.historyService) {
-      const fromPosition = this.parseKey(fromKey);
-      const toPosition = this.parseKey(toKey);
-      
       this.historyService.addAction({
         type: 'move',
         activityId,
-        originalPosition: fromPosition,
-        newPosition: toPosition
+        originalPosition: { day: fromDay },
+        newPosition: { day: toDay }
       });
     }
-    
+
     const activity = fromCell.activities.splice(activityIndex, 1)[0];
     toCell.activities.push(activity);
-    
+
     this.notifyChange();
     return true;
   }
 
-  private parseKey(key: string): { timeSlot: string; day: WeekDay; row: number; col: number } {
-    const parts = key.split('-');
-    const timeSlot = parts.slice(0, -1).join('-');
-    const day = parts[parts.length - 1] as WeekDay;
-    
-    const row = this.timeSlots.indexOf(timeSlot);
-    const col = this.weekDays.indexOf(day);
-    
-    return { timeSlot, day, row, col };
+  getCell(day: WeekDay): CalendarCell | undefined {
+    return this.calendarData.cells.get(day);
   }
 
-  private get timeSlots(): string[] {
-    return [
-      '7:45-13:10', '8:15-14:00', '14:00-15:00', '15:00-16:00', 
-      '15:30-17:30', '16:35-18:30', '17:15-19:15', '19:00-21:30'
-    ];
-  }
-
-  private get weekDays(): WeekDay[] {
-    return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  }
-
-  getCellKey(timeSlot: string, day: WeekDay): string {
-    return `${timeSlot}-${day}`;
-  }
-
-  getCell(timeSlot: string, day: WeekDay): CalendarCell | undefined {
-    return this.calendarData.cells.get(this.getCellKey(timeSlot, day));
-  }
-
-  addActivity(activity: Activity, timeSlot: string, day: WeekDay): boolean {
-    const key = this.getCellKey(timeSlot, day);
-    const cell = this.calendarData.cells.get(key);
-    
+  addActivity(activity: Activity, day: WeekDay): boolean {
+    const cell = this.calendarData.cells.get(day);
     if (!cell) return false;
 
     if (this.historyService) {
@@ -232,7 +153,7 @@ export class CalendarService {
         type: 'add',
         activityId: activity.id,
         originalPosition: null,
-        newPosition: this.parseKey(key),
+        newPosition: { day },
         originalData: activity
       });
     }
@@ -242,52 +163,52 @@ export class CalendarService {
     return true;
   }
 
-  addActivityDirect(activity: Activity, key: string): boolean {
-    const cell = this.calendarData.cells.get(key);
+  addActivityDirect(activity: Activity, day: WeekDay): boolean {
+    const cell = this.calendarData.cells.get(day);
     if (!cell) return false;
-    
+
     cell.activities.push(activity);
     this.notifyChange();
     return true;
   }
 
-  removeActivityDirect(activityId: string, key: string): boolean {
-    const cell = this.calendarData.cells.get(key);
+  removeActivityDirect(activityId: string, day: WeekDay): boolean {
+    const cell = this.calendarData.cells.get(day);
     if (!cell) return false;
-    
+
     const activityIndex = cell.activities.findIndex(a => a.id === activityId);
     if (activityIndex === -1) return false;
-    
+
     cell.activities.splice(activityIndex, 1);
     this.notifyChange();
     return true;
   }
 
-  moveActivityDirect(activityId: string, fromKey: string, toKey: string): boolean {
-    const fromCell = this.calendarData.cells.get(fromKey);
-    const toCell = this.calendarData.cells.get(toKey);
-    
+  moveActivityDirect(activityId: string, fromDay: WeekDay, toDay: WeekDay): boolean {
+    const fromCell = this.calendarData.cells.get(fromDay);
+    const toCell = this.calendarData.cells.get(toDay);
+
     if (!fromCell || !toCell) return false;
-    
+
     const activityIndex = fromCell.activities.findIndex(a => a.id === activityId);
     if (activityIndex === -1) return false;
-    
+
     const activity = fromCell.activities.splice(activityIndex, 1)[0];
     toCell.activities.push(activity);
-    
+
     this.notifyChange();
     return true;
   }
 
   updateActivity(activityId: string, updates: Partial<Activity>): boolean {
     let found = false;
-    
+
     this.calendarData.cells.forEach(cell => {
       const activityIndex = cell.activities.findIndex(a => a.id === activityId);
       if (activityIndex !== -1) {
         const originalActivity = { ...cell.activities[activityIndex] };
         cell.activities[activityIndex] = { ...cell.activities[activityIndex], ...updates };
-        
+
         if (this.historyService) {
           this.historyService.addAction({
             type: 'edit',
@@ -296,21 +217,21 @@ export class CalendarService {
             newData: cell.activities[activityIndex]
           });
         }
-        
+
         found = true;
       }
     });
-    
+
     if (found) {
       this.notifyChange();
     }
-    
+
     return found;
   }
 
   updateActivityDirect(activityId: string, activityData: Activity): boolean {
     let found = false;
-    
+
     this.calendarData.cells.forEach(cell => {
       const activityIndex = cell.activities.findIndex(a => a.id === activityId);
       if (activityIndex !== -1) {
@@ -318,176 +239,91 @@ export class CalendarService {
         found = true;
       }
     });
-    
+
     if (found) {
       this.notifyChange();
     }
-    
+
     return found;
   }
 
   deleteActivity(activityId: string): boolean {
     let found = false;
     let deletedActivity: Activity | null = null;
-    let cellKey = '';
-    
-    this.calendarData.cells.forEach((cell, key) => {
+    let deletedDay: WeekDay | null = null;
+
+    this.calendarData.cells.forEach((cell, day) => {
       const activityIndex = cell.activities.findIndex(a => a.id === activityId);
       if (activityIndex !== -1) {
         deletedActivity = { ...cell.activities[activityIndex] };
-        cellKey = key;
-        
+        deletedDay = day;
+
         if (this.historyService) {
-          const position = this.parseKey(cellKey);
           this.historyService.addAction({
             type: 'remove',
             activityId,
             originalData: deletedActivity,
-            originalPosition: position
+            originalPosition: { day }
           });
         }
-        
+
         cell.activities.splice(activityIndex, 1);
         found = true;
       }
     });
-    
+
     if (found) {
       this.notifyChange();
     }
-    
+
     return found;
   }
 
-  applyTemplate(templateActivities: any[]): void {
-    console.log(`🔄 Applying template with ${templateActivities.length} activities`);
-
-    // Save current state for undo before clearing
+  applyTemplate(templateActivities: TemplateActivity[]): void {
     if (this.historyService) {
-      // Create a snapshot of all current activities
       const currentActivities: any[] = [];
-      this.calendarData.cells.forEach((cell, cellKey) => {
+      this.calendarData.cells.forEach((cell, day) => {
         cell.activities.forEach(activity => {
-          const [timeSlot, day] = cellKey.split('-');
-          currentActivities.push({
-            ...activity,
-            timeSlot,
-            day
-          });
+          currentActivities.push({ ...activity, day });
         });
       });
-      
+
       this.historyService.addAction({
-        type: 'edit', // Use edit type which is supported
+        type: 'edit',
         activityId: 'template-clear',
         originalData: { activities: currentActivities },
         newData: { activities: templateActivities }
       });
     }
 
-    // Clear all current activities
     this.calendarData.cells.forEach(cell => {
       cell.activities = [];
     });
 
-    // Convert template activities back to regular activities and add to calendar
     let addedCount = 0;
     let skippedCount = 0;
-    const skippedActivities: string[] = [];
-    
-    templateActivities.forEach((templateActivity, index) => {
-      const activity: Activity = {
+
+    templateActivities.forEach(templateActivity => {
+      const cell = this.calendarData.cells.get(templateActivity.day as WeekDay);
+      if (!cell) {
+        skippedCount++;
+        return;
+      }
+
+      cell.activities.push({
         id: this.generateId(),
         title: templateActivity.title,
         person: templateActivity.person,
-        timeRange: templateActivity.timeRange
-      };
-
-      // RECONSTRUCT correct timeSlot and day from corrupted template data
-      // Template has wrong parsing: timeSlot='7:45', day='13:10' 
-      // Should be: timeSlot='7:45-13:10', day='monday'
-      
-      let correctTimeSlot: string;
-      let correctDay: string;
-      
-      // Try to reconstruct from original timeSlot and day in template
-      if (templateActivity.timeSlot && templateActivity.day) {
-        // Check if timeSlot looks incomplete (just time like '7:45')
-        if (!templateActivity.timeSlot.includes('-')) {
-          // Reconstruct full timeSlot by combining with day part
-          correctTimeSlot = `${templateActivity.timeSlot}-${templateActivity.day}`;
-          
-          // SMART DISTRIBUTION: Since original days are lost, distribute activities across weekdays
-          const availableKeys = Array.from(this.calendarData.cells.keys());
-          const matchingKeys = availableKeys.filter(key => key.startsWith(correctTimeSlot + '-'));
-          
-          if (matchingKeys.length > 0) {
-            // Distribute across different days instead of always using the first one
-            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-            const availableWeekdays = matchingKeys.filter(key => {
-              const parts = key.split('-');
-              return weekdays.includes(parts[2]);
-            });
-            
-            if (availableWeekdays.length > 0) {
-              // Use activity index to distribute across days
-              const dayIndex = index % availableWeekdays.length;
-              const selectedKey = availableWeekdays[dayIndex];
-              correctDay = selectedKey.split('-')[2];
-              // console.log(`🎯 Smart distribution: Activity ${index + 1} → ${correctTimeSlot}-${correctDay}`);
-            } else {
-              // Fallback to weekend if no weekdays
-              const parts = matchingKeys[0].split('-');
-              correctDay = parts[2];
-              console.log(`📅 Weekend fallback: ${correctTimeSlot}-${correctDay}`);
-            }
-          } else {
-            // Fallback: use first available day for this timeSlot
-            correctDay = 'monday';
-            console.log(`⚠️ Fallback: Using ${correctTimeSlot}-${correctDay}`);
-          }
-        } else {
-          // TimeSlot seems correct
-          correctTimeSlot = templateActivity.timeSlot;
-          correctDay = templateActivity.day;
-        }
-      } else {
-        // Fallback for completely broken data
-        correctTimeSlot = '15:00-16:00'; // Safe default
-        correctDay = 'monday';
-        console.log(`❌ Broken template data, using fallback: ${correctTimeSlot}-${correctDay}`);
-      }
-      
-      const cellKey = `${correctTimeSlot}-${correctDay}`;
-      const cell = this.calendarData.cells.get(cellKey);
-      
-      if (cell) {
-        cell.activities.push(activity);
-        addedCount++;
-      } else {
-        // Try to find alternative cell with same time or day
-        const altCellKey = this.findAlternativeCell(templateActivity.timeSlot, templateActivity.day);
-        if (altCellKey) {
-          const altCell = this.calendarData.cells.get(altCellKey);
-          if (altCell) {
-            altCell.activities.push(activity);
-            addedCount++;
-            console.log(`🔄 Moved activity "${templateActivity.title}" from ${cellKey} to ${altCellKey}`);
-          }
-        } else {
-          skippedCount++;
-          skippedActivities.push(templateActivity.title);
-          console.warn(`⚠️ Skipped activity: "${templateActivity.title}" (slot ${cellKey} not available)`);
-        }
-      }
+        timeRange: templateActivity.timeRange,
+        notes: templateActivity.notes
+      });
+      addedCount++;
     });
 
-    // Show user-friendly result
     if (skippedCount > 0) {
-      console.warn(`⚠️ Template partially applied: ${addedCount} loaded, ${skippedCount} skipped`);
-      console.warn('📋 Skipped activities:', skippedActivities);
+      console.warn(`⚠️ Template applicato parzialmente: ${addedCount} caricate, ${skippedCount} saltate`);
     } else {
-      console.log(`✅ Template fully applied: ${addedCount} activities loaded`);
+      console.log(`✅ Template applicato: ${addedCount} attività caricate`);
     }
     this.notifyChange();
   }
@@ -496,8 +332,8 @@ export class CalendarService {
     if (typeof localStorage !== 'undefined') {
       try {
         const dataToSave = {
+          version: 2,
           cells: Array.from(this.calendarData.cells.entries()),
-          timeSlots: this.calendarData.timeSlots,
           weekDays: this.calendarData.weekDays,
           timestamp: new Date().toISOString()
         };
@@ -509,65 +345,48 @@ export class CalendarService {
   }
 
   private loadCalendarData(): void {
-    if (typeof localStorage !== 'undefined') {
-      const saved = localStorage.getItem('calendarData');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          
-          // Restore the Map from array of entries
-          this.calendarData.cells = new Map(parsed.cells);
-          
-          console.log('Calendar data loaded from localStorage');
-          this.notifyChange();
-          return;
-        } catch (e) {
-          console.error('Failed to load calendar data:', e);
-        }
-      }
+    if (typeof localStorage === 'undefined') {
+      this.loadInitialData();
+      return;
     }
-    
-    // If no saved data or error, load initial data
-    this.loadInitialData();
-  }
 
-  private findAlternativeCell(timeSlot: string, day: string): string | null {
-    // Try to find best alternative cell for missing slot
-    
-    // First: try same day, different time slot  
-    const availableKeys = Array.from(this.calendarData.cells.keys());
-    const sameDayKeys = availableKeys.filter(key => key.endsWith(`-${day}`));
-    
-    if (sameDayKeys.length > 0) {
-      // Prefer afternoon slots (15:00+) for flexibility
-      const afternoonKeys = sameDayKeys.filter(key => {
-        const timepart = key.split('-')[0];
-        const hour = parseInt(timepart.split(':')[0]);
-        return hour >= 15;
-      });
-      
-      if (afternoonKeys.length > 0) {
-        return afternoonKeys[0]; // Return first afternoon slot
-      }
-      
-      return sameDayKeys[0]; // Return first available slot on same day
+    const saved = localStorage.getItem('calendarData');
+    if (!saved) {
+      this.loadInitialData();
+      return;
     }
-    
-    // Second: try same time slot, different day (weekday priority)
-    const sameTimeKeys = availableKeys.filter(key => key.startsWith(`${timeSlot}-`));
-    if (sameTimeKeys.length > 0) {
-      // Prefer weekdays over weekends
-      const weekdayKeys = sameTimeKeys.filter(key => 
-        !key.endsWith('-saturday') && !key.endsWith('-sunday'));
-      
-      if (weekdayKeys.length > 0) {
-        return weekdayKeys[0];
+
+    try {
+      const parsed = JSON.parse(saved);
+      const rawEntries: [string, any][] = Array.isArray(parsed.cells) ? parsed.cells : [];
+      const isCurrentFormat = parsed.version === 2;
+
+      if (isCurrentFormat) {
+        rawEntries.forEach(([day, cell]) => {
+          const target = this.calendarData.cells.get(day as WeekDay);
+          if (target && cell && Array.isArray(cell.activities)) {
+            target.activities = cell.activities;
+          }
+        });
+      } else {
+        // Legacy format from the fixed time-slot grid: keys were "timeSlot-day".
+        // Recover each activity under its real day (last '-' segment) — the grid
+        // is now continuous and positions activities from their own timeRange.
+        rawEntries.forEach(([key, cell]) => {
+          const day = key.split('-').pop() as WeekDay;
+          const target = this.calendarData.cells.get(day);
+          if (target && cell && Array.isArray(cell.activities)) {
+            target.activities.push(...cell.activities);
+          }
+        });
+        console.log('Dati del vecchio layout a fasce orarie migrati alla nuova griglia continua');
       }
-      
-      return sameTimeKeys[0];
+
+      this.notifyChange();
+    } catch (e) {
+      console.error('Failed to load calendar data:', e);
+      this.loadInitialData();
     }
-    
-    return null; // No suitable alternative found
   }
 
   private generateId(): string {

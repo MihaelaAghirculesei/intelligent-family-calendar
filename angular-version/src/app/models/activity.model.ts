@@ -8,22 +8,14 @@ export interface Activity {
 
 export type Person = string;
 
-export interface TimeSlot {
-  timeRange: string;
-  day: WeekDay;
-}
-
 export type WeekDay = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
 export interface CalendarCell {
-  timeSlot: TimeSlot;
+  day: WeekDay;
   activities: Activity[];
-  isSchoolTime?: boolean;
-  schoolPerson?: Person[];
 }
 
 export interface CalendarData {
-  cells: Map<string, CalendarCell>;
-  timeSlots: string[];
+  cells: Map<WeekDay, CalendarCell>;
   weekDays: WeekDay[];
 }
