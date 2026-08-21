@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { HistoryAction, HistoryState, CellPosition } from '../models/history.model';
+import { HistoryAction, HistoryState } from '../models/history.model';
 
 @Injectable({
   providedIn: 'root'
@@ -99,10 +99,6 @@ export class HistoryService {
   private updateButtonStates(): void {
     this.canUndoSubject.next(this.canUndo());
     this.canRedoSubject.next(this.canRedo());
-  }
-
-  private positionToKey(position: CellPosition): string {
-    return `${position.timeSlot}-${position.day}`;
   }
 
   getHistorySize(): number {

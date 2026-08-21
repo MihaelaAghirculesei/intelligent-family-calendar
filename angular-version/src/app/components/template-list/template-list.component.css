@@ -96,6 +96,12 @@
   margin-bottom: 12px;
 }
 
+.template-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .template-info {
   flex: 1;
 }
@@ -114,6 +120,22 @@
   font-style: italic;
 }
 
+.apply-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.apply-btn:hover {
+  background: #45a049;
+}
+
 .delete-btn {
   background: #ff9800;
   color: white;
@@ -127,7 +149,6 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
-  margin-left: 12px;
 }
 
 .delete-btn:hover {

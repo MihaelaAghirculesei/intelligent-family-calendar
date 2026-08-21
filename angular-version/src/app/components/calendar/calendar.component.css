@@ -1,8 +1,3 @@
-@page {
-    size: A4;
-    margin: 15mm;
-}
-
 :host {
     font-family: Arial, sans-serif;
     font-size: 11px;
@@ -12,7 +7,7 @@
 
 .container {
     width: 100%;
-    max-width: 180mm;
+    max-width: 1400px;
 }
 
 .header-row {
@@ -135,67 +130,138 @@ h1 {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
-.schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 9px;
+/* Continuous time grid, like Google Calendar */
+.calendar-grid {
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
-.schedule-table th {
+.grid-header {
+    display: flex;
     background-color: #333;
-    color: white;
-    padding: 6px 4px;
-    text-align: center;
-    border: 1px solid #ddd;
-    font-size: 10px;
 }
 
-.schedule-table td {
-    border: 1px solid #ddd;
-    padding: 2px;
-    vertical-align: top;
+.hour-gutter-header {
+    width: 44px;
+    flex-shrink: 0;
+    border-right: 1px solid #555;
+}
+
+.day-header {
+    flex: 1;
+    color: white;
+    text-align: center;
+    padding: 6px 2px;
+    font-size: 11px;
+    font-weight: bold;
+    border-left: 1px solid rgba(255,255,255,0.25);
+}
+
+.day-header:first-of-type {
+    border-left: none;
+}
+
+/* One distinct color per weekday so the header (and the column below it,
+   faintly) is instantly recognizable even when many activities crowd the grid. */
+.day-header:nth-child(2) { background-color: #2563EB; }
+.day-header:nth-child(3) { background-color: #7C3AED; }
+.day-header:nth-child(4) { background-color: #DB2777; }
+.day-header:nth-child(5) { background-color: #D97706; }
+.day-header:nth-child(6) { background-color: #059669; }
+.day-header:nth-child(7) { background-color: #0891B2; }
+.day-header:nth-child(8) { background-color: #DC2626; }
+
+.day-column:nth-child(2) { background-color: #CFE0FD; border-left-color: #2563EB; }
+.day-column:nth-child(3) { background-color: #DDCFFB; border-left-color: #7C3AED; }
+.day-column:nth-child(4) { background-color: #FBCEE6; border-left-color: #DB2777; }
+.day-column:nth-child(5) { background-color: #FBDDB0; border-left-color: #D97706; }
+.day-column:nth-child(6) { background-color: #BFEEDA; border-left-color: #059669; }
+.day-column:nth-child(7) { background-color: #BCE9F2; border-left-color: #0891B2; }
+.day-column:nth-child(8) { background-color: #FAC6C6; border-left-color: #DC2626; }
+
+.grid-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.grid-body {
     position: relative;
+    display: flex;
 }
 
-.time-col {
+.hour-gutter {
+    position: relative;
+    width: 44px;
+    flex-shrink: 0;
     background-color: #f8f9fa;
-    font-weight: bold;
-    text-align: center;
-    width: 60px;
-    font-size: 8px;
+    border-right: 2px solid #999;
 }
 
-.activity {
-    padding: 1px 3px;
-    border-radius: 3px;
-    margin: 1px 0;
-    font-size: 8px;
+.hour-label {
+    position: absolute;
+    left: 0;
+    right: 4px;
+    transform: translateY(-50%);
+    text-align: right;
+    font-size: 9px;
     font-weight: bold;
+    color: #555;
+}
+
+.day-column {
+    position: relative;
+    flex: 1;
+    border-left: 3px solid #999;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.18) 0,
+        rgba(0,0,0,0.18) 1px,
+        transparent 1px,
+        transparent 60px
+    );
+}
+
+.grid-activity {
+    position: absolute;
+    box-sizing: border-box;
+    padding: 2px 4px;
+    border-radius: 3px;
     color: white;
-    text-align: center;
-    line-height: 1.1;
-    white-space: nowrap;
+    font-weight: bold;
     overflow: hidden;
 }
 
+.activity-content {
+    font-size: 8px;
+    line-height: 1.25;
+}
+
+.activity-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+    white-space: normal;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+}
+
+.activity-time {
+    font-size: 7px;
+    opacity: 0.9;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
 
 .draggable-activity {
     cursor: move;
-    transition: opacity 0.3s ease, transform 0.2s ease;
-    box-sizing: border-box;
-    display: block;
-    width: auto;
-    height: auto;
+    transition: opacity 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .draggable-activity:hover {
-    transform: scale(1.02);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.activity-drop-zone {
-    min-height: 20px;
-    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 2;
 }
 
 .cdk-drop-list-dragging .cdk-drag {
@@ -219,28 +285,27 @@ h1 {
 
 .cdk-drop-list-active {
     background-color: rgba(76, 175, 80, 0.1) !important;
-    border: 2px dashed #4CAF50 !important;
 }
 
-.activity.editing {
+.grid-activity.editing {
     z-index: 1000;
-    transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .edit-form {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     padding: 2px;
+    height: 100%;
 }
 
 .edit-input {
     border: none;
     background: rgba(255,255,255,0.9);
     border-radius: 2px;
-    padding: 1px 3px;
-    font-size: 7px;
+    padding: 2px 4px;
+    font-size: 9px;
     font-weight: bold;
     color: #333;
 }
@@ -249,8 +314,8 @@ h1 {
     border: none;
     background: rgba(255,255,255,0.9);
     border-radius: 2px;
-    padding: 1px 3px;
-    font-size: 7px;
+    padding: 2px 4px;
+    font-size: 9px;
     font-weight: bold;
     color: #333;
 }
@@ -266,7 +331,7 @@ h1 {
     border: none;
     border-radius: 2px;
     padding: 1px 4px;
-    font-size: 8px;
+    font-size: 9px;
     cursor: pointer;
     font-weight: bold;
 }
@@ -340,49 +405,13 @@ h1 {
     background: #45a049;
 }
 
-.school-leo,
-.school-anna-mia {
-    background-color: #FFD700 !important;
-    color: black;
-    font-size: 7px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 5px;
-    height: 100%;
-}
-
-.name-line {
-    text-align: center;
-    margin-bottom: 5px;
-}
-
-.school-info {
-    text-align: center;
-    font-size: 0.9em;
-    font-weight: bold;
-}
-
-.compact-row {
-    height: 12px;
-}
-
-.regular-row {
-    height: 25px;
-}
-
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .container {
         padding: 5px;
     }
-    
-    .schedule-table {
-        font-size: 7px;
-    }
-    
-    .schedule-table th,
-    .schedule-table td {
-        padding: 1px;
+
+    :host {
+        font-size: 9px;
     }
 }
 
@@ -391,20 +420,20 @@ h1 {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    
+
     .bottom-controls {
         display: none;
     }
-    
+
     .export-btn {
         display: none;
     }
-    
+
     .header-row {
         justify-content: center;
     }
-    
-    .schedule-table {
+
+    .calendar-grid {
         page-break-inside: avoid;
     }
 }

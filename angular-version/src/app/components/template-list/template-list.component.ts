@@ -12,6 +12,7 @@ import { WeeklyTemplate } from '../../models/template.model';
 })
 export class TemplateListComponent implements OnInit {
   @Output() templateDeleted = new EventEmitter<string>();
+  @Output() templateApplied = new EventEmitter<WeeklyTemplate>();
   @Output() cancelled = new EventEmitter<void>();
 
   templates: WeeklyTemplate[] = [];
@@ -32,6 +33,14 @@ export class TemplateListComponent implements OnInit {
   hide(): void {
     this.isVisible = false;
     this.cancelled.emit();
+  }
+
+  applyTemplate(template: WeeklyTemplate): void {
+    const confirmed = confirm(`Applicare il template "${template.name}" al calendario?\n\n⚠️ Questo sostituirà tutte le attività attuali con quelle del template (${template.activities.length} attività).`);
+    if (confirmed) {
+      this.templateApplied.emit(template);
+      this.hide();
+    }
   }
 
   deleteTemplate(templateId: string): void {

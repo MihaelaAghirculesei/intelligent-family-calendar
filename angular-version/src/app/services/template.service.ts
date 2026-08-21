@@ -21,16 +21,13 @@ export class TemplateService {
   saveCurrentWeekAsTemplate(calendarData: CalendarData, templateData: SaveTemplateData): WeeklyTemplate {
     const templateActivities: TemplateActivity[] = [];
     
-    calendarData.cells.forEach((cell, cellKey) => {
+    calendarData.cells.forEach((cell, day) => {
       cell.activities.forEach(activity => {
-        const [timeSlot, day] = cellKey.split('-');
-        
         templateActivities.push({
           id: activity.id,
           title: activity.title,
           person: activity.person,
           timeRange: activity.timeRange,
-          timeSlot,
           day,
           notes: activity.notes
         });

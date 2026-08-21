@@ -8,144 +8,124 @@
       <button class="export-btn">📄 Esporta PDF</button>
     </div>
   </div>
-  
+
   <div class="legend">
-    <div 
-      *ngFor="let person of persons" 
+    <div
+      *ngFor="let person of persons"
       class="legend-item"
       [style.background-color]="person.color">
       {{ person.name }}
     </div>
   </div>
-  
-  <div cdkDropListGroup>
-    <table class="schedule-table">
-      <thead>
-        <tr>
-          <th>Orario</th>
-          <th *ngFor="let label of weekDayLabels">{{ label }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let timeSlot of timeSlots" 
-            [class]="timeSlot === '7:45-13:10' ? 'compact-row' : 'regular-row'">
-          <td class="time-col">{{ timeSlot }}</td>
-          
-          <td *ngFor="let day of weekDays; let dayIndex = index"
-              [attr.data-timeslot]="timeSlot"
-              [attr.data-day]="day">
-            
-            <ng-container *ngIf="getCell(calendarData, timeSlot, day) as cell">
-              <div *ngIf="cell.isSchoolTime && cell.schoolPerson && cell.schoolPerson.length > 0" 
-                   [class]="cell.schoolPerson.includes('leo') ? 'school-leo' : 'school-anna-mia'">
-                <div class="name-line">
-                  <ng-container *ngFor="let person of cell.schoolPerson; let isLast = last">
-                    <span [style.color]="getPersonColor(person)" style="font-weight: bold;">
-                      {{ person.toUpperCase() }}
-                    </span>
-                    <span *ngIf="!isLast && cell.schoolPerson!.length > 1" 
-                          [style.color]="getPersonColor(cell.schoolPerson![1])" 
-                          style="font-weight: bold;">+{{ cell.schoolPerson![1].toUpperCase() }}</span>
-                  </ng-container>
-                </div>
-                <div class="school-info">
-                  SCUOLA<br>{{ getSchoolTime(timeSlot, day) }}
-                </div>
-              </div>
-              
-              <div cdkDropList 
-                   [id]="getCellKey(timeSlot, day)"
-                   [cdkDropListData]="cell.activities"
-                   [cdkDropListConnectedTo]="connectedDropLists"
-                   (cdkDropListDropped)="onDrop($event, timeSlot, day)"
-                   class="activity-drop-zone">
-                <div *ngFor="let activity of cell.activities" 
-                     cdkDrag
-                     [cdkDragData]="activity"
-                     class="activity draggable-activity"
-                     [style.background-color]="getPersonColor(activity.person)"
-                     (dblclick)="startEdit(activity)"
-                     [class.editing]="editingActivityId === activity.id">
-                  
-                  <div *ngIf="editingActivityId !== activity.id">
-                    {{ activity.title }}<br><small>{{ activity.timeRange }}</small>
-                  </div>
-                  
-                  <div *ngIf="editingActivityId === activity.id" class="edit-form" (click)="$event.stopPropagation()">
-                    <input [(ngModel)]="editForm.title" 
-                           class="edit-input title-input"
-                           placeholder="Titolo"
-                           (keyup.enter)="saveEdit()"
-                           (keyup.escape)="cancelEdit()"
-                           #titleInput>
-                    <input [(ngModel)]="editForm.timeRange" 
-                           class="edit-input time-input"
-                           placeholder="Orario"
-                           (keyup.enter)="saveEdit()"
-                           (keyup.escape)="cancelEdit()">
-                    <div class="person-selector">
-                      <select [(ngModel)]="editForm.person" class="edit-select">
-                        <option *ngFor="let person of persons" [value]="person.id">
-                          {{ person.name }}
-                        </option>
-                      </select>
-                      <button type="button" 
-                              class="add-person-btn"
-                              (click)="showAddPersonForm()"
-                              title="Aggiungi nuova persona">
-                        ➕
-                      </button>
-                    </div>
-                    <div class="edit-buttons">
-                      <button (click)="onUndo()" 
-                              [disabled]="!(canUndo$ | async)"
-                              class="undo-btn"
-                              title="Annulla">↶</button>
-                      <button (click)="onRedo()" 
-                              [disabled]="!(canRedo$ | async)"
-                              class="redo-btn"
-                              title="Ripeti">↷</button>
-                      <button (click)="deleteActivity()" 
-                              class="delete-btn"
-                              title="Elimina attività">🗑️</button>
-                      <button (click)="saveEdit()" class="save-btn">✓</button>
-                      <button (click)="cancelEdit()" class="cancel-btn">✕</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+  <div class="calendar-grid">
+    <div class="grid-header">
+      <div class="hour-gutter-header"></div>
+      <div class="day-header" *ngFor="let label of weekDayLabels">{{ label }}</div>
+    </div>
+
+    <div class="grid-body" [style.height.px]="gridHeightPx" cdkDropListGroup>
+      <div class="hour-gutter">
+        <div class="hour-label" *ngFor="let h of hourMarks" [style.top.px]="(h - gridStartHour) * 60">
+          {{ hourLabel(h) }}
+        </div>
+      </div>
+
+      <div class="day-column"
+           *ngFor="let day of weekDays"
+           [attr.data-day]="day"
+           cdkDropList
+           [id]="day"
+           [cdkDropListData]="getCell(calendarData, day)?.activities || []"
+           [cdkDropListConnectedTo]="connectedDropLists"
+           (cdkDropListDropped)="onDrop($event, day)">
+
+        <div class="grid-activity draggable-activity"
+             *ngFor="let block of dayBlocks[day]"
+             cdkDrag
+             [cdkDragData]="block.activity"
+             [ngStyle]="getBlockStyle(block)"
+             [style.background-color]="getPersonColor(block.activity.person)"
+             (dblclick)="startEdit(block.activity)"
+             [class.editing]="editingActivityId === block.activity.id">
+
+          <div *ngIf="editingActivityId !== block.activity.id" class="activity-content">
+            <div class="activity-title">{{ block.activity.title }}</div>
+            <div class="activity-time">{{ block.activity.timeRange }}</div>
+          </div>
+
+          <div *ngIf="editingActivityId === block.activity.id" class="edit-form" (click)="$event.stopPropagation()">
+            <input [(ngModel)]="editForm.title"
+                   class="edit-input title-input"
+                   placeholder="Titolo"
+                   (keyup.enter)="saveEdit()"
+                   (keyup.escape)="cancelEdit()"
+                   #titleInput>
+            <input [(ngModel)]="editForm.timeRange"
+                   class="edit-input time-input"
+                   placeholder="Orario (es. 15:00-16:00)"
+                   (keyup.enter)="saveEdit()"
+                   (keyup.escape)="cancelEdit()">
+            <div class="person-selector">
+              <select [(ngModel)]="editForm.person" class="edit-select">
+                <option *ngFor="let person of persons" [value]="person.id">
+                  {{ person.name }}
+                </option>
+              </select>
+              <button type="button"
+                      class="add-person-btn"
+                      (click)="showAddPersonForm()"
+                      title="Aggiungi nuova persona">
+                ➕
+              </button>
+            </div>
+            <div class="edit-buttons">
+              <button (click)="onUndo()"
+                      [disabled]="!(canUndo$ | async)"
+                      class="undo-btn"
+                      title="Annulla">↶</button>
+              <button (click)="onRedo()"
+                      [disabled]="!(canRedo$ | async)"
+                      class="redo-btn"
+                      title="Ripeti">↷</button>
+              <button (click)="deleteActivity()"
+                      class="delete-btn"
+                      title="Elimina attività">🗑️</button>
+              <button (click)="saveEdit()" class="save-btn">✓</button>
+              <button (click)="cancelEdit()" class="cancel-btn">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  
+
   <div class="bottom-controls">
-    <button class="control-btn" 
+    <button class="control-btn"
             [disabled]="!(canUndo$ | async)"
             (click)="onUndo()">↶ Annulla</button>
-    <button class="control-btn" 
+    <button class="control-btn"
             [disabled]="!(canRedo$ | async)"
             (click)="onRedo()">↷ Ripeti</button>
   </div>
-  
+
   <app-add-activity
     (activityAdded)="onActivityAdded($event)"
     (cancelled)="onAddActivityCancelled()"
     #addActivityComponent></app-add-activity>
-    
+
   <app-add-person
     (personAdded)="onPersonAdded($event)"
     (cancelled)="onAddPersonCancelled()"
     #addPersonComponent></app-add-person>
-    
+
   <app-save-template
     (templateSaved)="onTemplateSaved($event)"
     (cancelled)="onSaveTemplateCancelled()"
     #saveTemplateComponent></app-save-template>
-    
+
   <app-template-list
+    (templateApplied)="onTemplateApplied($event)"
     (cancelled)="onTemplateListCancelled()"
     #templateListComponent></app-template-list>
 </div>
