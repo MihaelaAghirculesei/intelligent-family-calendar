@@ -134,7 +134,6 @@ h1 {
 .calendar-grid {
     border: 1px solid #ddd;
     border-radius: 4px;
-    overflow: hidden;
 }
 
 .grid-header {
@@ -155,11 +154,35 @@ h1 {
     padding: 6px 2px;
     font-size: 11px;
     font-weight: bold;
-    border-left: 1px solid #555;
+    border-left: 1px solid rgba(255,255,255,0.25);
 }
 
 .day-header:first-of-type {
     border-left: none;
+}
+
+/* One distinct color per weekday so the header (and the column below it,
+   faintly) is instantly recognizable even when many activities crowd the grid. */
+.day-header:nth-child(2) { background-color: #2563EB; }
+.day-header:nth-child(3) { background-color: #7C3AED; }
+.day-header:nth-child(4) { background-color: #DB2777; }
+.day-header:nth-child(5) { background-color: #D97706; }
+.day-header:nth-child(6) { background-color: #059669; }
+.day-header:nth-child(7) { background-color: #0891B2; }
+.day-header:nth-child(8) { background-color: #DC2626; }
+
+.day-column:nth-child(2) { background-color: #EFF4FE; }
+.day-column:nth-child(3) { background-color: #F5F1FE; }
+.day-column:nth-child(4) { background-color: #FDF1F7; }
+.day-column:nth-child(5) { background-color: #FEF6EC; }
+.day-column:nth-child(6) { background-color: #ECFAF5; }
+.day-column:nth-child(7) { background-color: #EBF8FA; }
+.day-column:nth-child(8) { background-color: #FDECEC; }
+
+.grid-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
 
 .grid-body {
