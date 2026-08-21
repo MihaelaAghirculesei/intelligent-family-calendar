@@ -56,10 +56,14 @@ export class CalendarComponent implements OnInit {
 
   // Continuous time grid, like Google Calendar: activities are positioned
   // by their real start/end time instead of a fixed row per time slot.
-  readonly gridStartHour = 7;
-  readonly gridEndHour = 22;
+  // The 7:00-22:00 default window expands automatically to fit any activity
+  // that falls outside it, so nothing ever gets clipped off-screen.
+  private readonly defaultStartHour = 7;
+  private readonly defaultEndHour = 22;
   readonly pxPerMinute = 1; // 60px per hour
-  readonly gridHeightPx = (this.gridEndHour - this.gridStartHour) * 60 * this.pxPerMinute;
+  gridStartHour = this.defaultStartHour;
+  gridEndHour = this.defaultEndHour;
+  gridHeightPx = (this.gridEndHour - this.gridStartHour) * 60 * this.pxPerMinute;
   hourMarks: number[] = [];
 
   dayBlocks: Record<WeekDay, ActivityBlock[]> = {
@@ -72,6 +76,11 @@ export class CalendarComponent implements OnInit {
     private personService: PersonService,
     private templateService: TemplateService
   ) {
+    this.rebuildHourMarks();
+  }
+
+  private rebuildHourMarks(): void {
+    this.hourMarks = [];
     for (let h = this.gridStartHour; h <= this.gridEndHour; h++) {
       this.hourMarks.push(h);
     }
@@ -131,6 +140,26 @@ export class CalendarComponent implements OnInit {
   }
 
   private recomputeLayout(calendarData: CalendarData): void {
+    // Widen the grid to fit any activity outside the default 7:00-22:00
+    // window (e.g. an early-morning or late-evening appointment), so it
+    // never ends up clipped by the grid's rounded-corner overflow:hidden.
+    let minStart = this.defaultStartHour * 60;
+    let maxEnd = this.defaultEndHour * 60;
+
+    this.weekDays.forEach(day => {
+      (calendarData.cells.get(day)?.activities || []).forEach(activity => {
+        const parsed = this.parseTimeRange(activity.timeRange);
+        if (!parsed) return;
+        minStart = Math.min(minStart, parsed.start);
+        maxEnd = Math.max(maxEnd, parsed.end);
+      });
+    });
+
+    this.gridStartHour = Math.floor(minStart / 60);
+    this.gridEndHour = Math.ceil(maxEnd / 60);
+    this.gridHeightPx = (this.gridEndHour - this.gridStartHour) * 60 * this.pxPerMinute;
+    this.rebuildHourMarks();
+
     const gridStart = this.gridStartHour * 60;
     const gridEnd = this.gridEndHour * 60;
 
