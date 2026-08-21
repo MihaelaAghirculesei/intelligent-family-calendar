@@ -205,11 +205,14 @@ export class CalendarComponent implements OnInit {
         });
 
         const totalCols = columnEnds.length;
+        // When several activities sit side by side in narrow columns, give them
+        // enough height to show 3-4 wrapped lines of text instead of being cut off.
+        const minHeight = totalCols > 1 ? 44 : 16;
         cluster.forEach((item, i) => {
           const clampedStart = Math.max(item.start, gridStart);
           const clampedEnd = Math.min(item.end, gridEnd);
           const top = (clampedStart - gridStart) * this.pxPerMinute;
-          const height = Math.max((clampedEnd - clampedStart) * this.pxPerMinute, 16);
+          const height = Math.max((clampedEnd - clampedStart) * this.pxPerMinute, minHeight);
           const widthPct = 100 / totalCols;
           const leftPct = widthPct * colOf[i];
 

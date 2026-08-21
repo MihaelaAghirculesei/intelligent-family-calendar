@@ -211,21 +211,24 @@ h1 {
 
 .activity-content {
     font-size: 8px;
-    line-height: 1.2;
+    line-height: 1.25;
 }
 
 .activity-title {
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
     overflow: hidden;
+    white-space: normal;
+    overflow-wrap: break-word;
     text-overflow: ellipsis;
 }
 
 .activity-time {
     font-size: 7px;
     opacity: 0.9;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: break-word;
 }
 
 .draggable-activity {
