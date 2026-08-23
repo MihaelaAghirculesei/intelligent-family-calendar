@@ -179,6 +179,34 @@ h1 {
 .day-column:nth-child(7) { background-color: #BCE9F2; border-left-color: #0891B2; }
 .day-column:nth-child(8) { background-color: #FAC6C6; border-left-color: #DC2626; }
 
+/* PDF export mode: give every column a fixed pixel width instead of the
+   on-screen flex:1 stretch, and let the header/body rows shrink to fit their
+   content. That way, hiding the weekend columns actually narrows the
+   captured grid (rather than letting Mon-Fri simply expand to fill the same
+   width) — a narrower capture is what makes everything print bigger. */
+.pdf-export {
+    width: max-content;
+}
+
+.pdf-export .calendar-grid,
+.pdf-export .grid-header,
+.pdf-export .grid-body {
+    width: max-content;
+}
+
+.pdf-export .day-header,
+.pdf-export .day-column {
+    flex: 0 0 190px;
+    width: 190px;
+}
+
+.pdf-hide-weekend .day-header:nth-child(7),
+.pdf-hide-weekend .day-header:nth-child(8),
+.pdf-hide-weekend .day-column:nth-child(7),
+.pdf-hide-weekend .day-column:nth-child(8) {
+    display: none;
+}
+
 .grid-header {
     position: sticky;
     top: 0;

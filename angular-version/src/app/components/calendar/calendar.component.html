@@ -5,7 +5,7 @@
       <button class="add-btn" (click)="showAddActivityForm()">➕ Aggiungi Attività</button>
       <button class="template-btn" (click)="showSaveTemplateDialog()">💾 Salva Template</button>
       <button class="template-list-btn" (click)="showTemplateListDialog()">📋 Template ({{ templateCount }})</button>
-      <button class="export-btn" [disabled]="isExportingPdf" (click)="exportPdf()">
+      <button class="export-btn" [disabled]="isExportingPdf" (click)="showExportPdfDialog()">
         {{ isExportingPdf ? '⏳ Esportazione...' : '📄 Esporta PDF' }}
       </button>
     </div>
@@ -132,4 +132,9 @@
     (templateApplied)="onTemplateApplied($event)"
     (cancelled)="onTemplateListCancelled()"
     #templateListComponent></app-template-list>
+
+  <app-export-pdf-options
+    (exportConfirmed)="onExportPdfConfirmed($event)"
+    (cancelled)="onExportPdfCancelled()"
+    #exportPdfOptionsComponent></app-export-pdf-options>
 </div>
