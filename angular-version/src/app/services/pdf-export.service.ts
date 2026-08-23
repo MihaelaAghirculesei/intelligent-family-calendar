@@ -23,49 +23,59 @@ export class PdfExportService {
       backgroundColor: '#ffffff'
     });
 
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 8;
-    const maxWidth = pageWidth - margin * 2;
-    const maxHeight = pageHeight - margin * 2;
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
     if (options.singlePage) {
-      // Shrink (or grow) the whole capture to fit within one page in both
-      // dimensions, so it always prints on a single sheet.
-      const scale = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
-      const imgWidth = canvas.width * scale;
-      const imgHeight = canvas.height * scale;
-      const x = margin + (maxWidth - imgWidth) / 2;
-      pdf.addImage(imgData, 'JPEG', x, margin, imgWidth, imgHeight);
-    } else {
-      // Fit the page width, then slice the capture into as many pages as its
-      // height needs.
-      const pxToMm = maxWidth / canvas.width;
-      const pageContentHeightPx = maxHeight / pxToMm;
-      let renderedPx = 0;
-      let firstPage = true;
+      // Always fill the full A4-landscape width (297mm) — never shrink to
+      // fit the height too, which used to leave the calendar centered with
+      // dead space on both sides whenever it was taller than it was wide.
+      // Instead, size the *page itself* to the content's aspect ratio, so
+      // there's no leftover margin to shrink into. A printer's "fit to
+      // page" (the default in most print dialogs) then scales this custom
+      // page up to fill a real A4 sheet, enlarging the text with it.
+      const pageWidth = 297;
+      const maxWidth = pageWidth - margin * 2;
+      const imgWidth = maxWidth;
+      const imgHeight = canvas.height * (imgWidth / canvas.width);
+      const pageHeight = imgHeight + margin * 2;
 
-      while (renderedPx < canvas.height) {
-        if (!firstPage) pdf.addPage();
-        firstPage = false;
+      const pdf = new jsPDF({ unit: 'mm', format: [pageWidth, pageHeight], orientation: 'landscape' });
+      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+      pdf.save(filename);
+      return;
+    }
 
-        const sliceHeightPx = Math.min(pageContentHeightPx, canvas.height - renderedPx);
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceHeightPx;
-        sliceCanvas.getContext('2d')!.drawImage(
-          canvas, 0, renderedPx, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx
-        );
+    // Fit the page width, then slice the capture into as many pages as its
+    // height needs.
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const maxWidth = pageWidth - margin * 2;
+    const maxHeight = pageHeight - margin * 2;
+    const pxToMm = maxWidth / canvas.width;
+    const pageContentHeightPx = maxHeight / pxToMm;
+    let renderedPx = 0;
+    let firstPage = true;
 
-        pdf.addImage(
-          sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG',
-          margin, margin, maxWidth, sliceHeightPx * pxToMm
-        );
+    while (renderedPx < canvas.height) {
+      if (!firstPage) pdf.addPage();
+      firstPage = false;
 
-        renderedPx += sliceHeightPx;
-      }
+      const sliceHeightPx = Math.min(pageContentHeightPx, canvas.height - renderedPx);
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = sliceHeightPx;
+      sliceCanvas.getContext('2d')!.drawImage(
+        canvas, 0, renderedPx, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx
+      );
+
+      pdf.addImage(
+        sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG',
+        margin, margin, maxWidth, sliceHeightPx * pxToMm
+      );
+
+      renderedPx += sliceHeightPx;
     }
 
     pdf.save(filename);

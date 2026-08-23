@@ -196,8 +196,44 @@ h1 {
 
 .pdf-export .day-header,
 .pdf-export .day-column {
-    flex: 0 0 190px;
-    width: 190px;
+    flex: 0 0 220px;
+    width: 220px;
+}
+
+/* On-screen font sizes are tuned to be compact on a monitor; a printed page
+   has room to spare, and the on-screen sizes read as illegibly tiny once
+   printed. Bump them up for export, and give activity blocks a taller floor
+   so the bigger text always has room to sit in. */
+.pdf-export .day-header {
+    font-size: 15px;
+    padding: 8px 4px;
+}
+
+.pdf-export .hour-gutter-header,
+.pdf-export .hour-gutter {
+    width: 60px;
+}
+
+.pdf-export .hour-label {
+    font-size: 12px;
+}
+
+.pdf-export .legend-item {
+    font-size: 14px;
+    padding: 6px 14px;
+}
+
+.pdf-export .grid-activity {
+    min-height: 60px;
+}
+
+.pdf-export .activity-content {
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.pdf-export .activity-time {
+    font-size: 9px;
 }
 
 .pdf-hide-weekend .day-header:nth-child(7),
