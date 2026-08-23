@@ -1,64 +1,32 @@
 import { Injectable } from '@angular/core';
-import html2pdf from 'html2pdf.js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PdfExportService {
 
-  async exportToPdf(elementId: string, filename: string = 'orario-famiglia.pdf'): Promise<void> {
-    const element = document.getElementById(elementId);
-    
-    if (!element) {
-      throw new Error(`Element with id '${elementId}' not found`);
-    }
-
-    const opt = {
-      margin: [15, 15, 15, 15],
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait' 
-      }
-    };
-    
-    try {
-      await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      throw error;
-    }
-  }
-
   async exportElement(element: HTMLElement, filename: string = 'orario-famiglia.pdf'): Promise<void> {
-    const opt = {
-      margin: [15, 15, 15, 15],
-      filename: filename,
+    // html2pdf.js pulls in jspdf + html2canvas, which are heavy and only ever
+    // needed when the user actually exports. Load it on demand instead of at
+    // app startup, so it doesn't bloat the initial bundle.
+    const { default: html2pdf } = await import('html2pdf.js');
+
+    // Landscape A4 fits all 7 day columns comfortably; the default pagebreak
+    // mode (['css', 'legacy']) already paginates a grid taller than one page.
+    await html2pdf().set({
+      margin: 10,
+      filename,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
+      html2canvas: {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff'
       },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait' 
+      jsPDF: {
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'landscape'
       }
-    };
-    
-    try {
-      await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      throw error;
-    }
+    }).from(element).save();
   }
 }

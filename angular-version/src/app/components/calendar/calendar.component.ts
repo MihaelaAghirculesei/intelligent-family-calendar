@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -12,6 +12,7 @@ import { SaveTemplateComponent } from '../save-template/save-template.component'
 import { TemplateListComponent } from '../template-list/template-list.component';
 import { PersonService, PersonData } from '../../services/person.service';
 import { TemplateService } from '../../services/template.service';
+import { PdfExportService } from '../../services/pdf-export.service';
 import { SaveTemplateData } from '../../models/template.model';
 
 interface ActivityBlock {
@@ -36,6 +37,7 @@ export class CalendarComponent implements OnInit {
   @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
   @ViewChild('saveTemplateComponent') saveTemplateComponent!: SaveTemplateComponent;
   @ViewChild('templateListComponent') templateListComponent!: TemplateListComponent;
+  @ViewChild('printArea') printArea!: ElementRef<HTMLElement>;
 
   calendarData$!: Observable<CalendarData>;
   canUndo$!: Observable<boolean>;
@@ -43,6 +45,7 @@ export class CalendarComponent implements OnInit {
   connectedDropLists: string[] = [];
   persons: any[] = [];
   templateCount = 0;
+  isExportingPdf = false;
 
   editingActivityId: string | null = null;
   editForm: {
@@ -74,7 +77,8 @@ export class CalendarComponent implements OnInit {
     private calendarService: CalendarService,
     private historyService: HistoryService,
     private personService: PersonService,
-    private templateService: TemplateService
+    private templateService: TemplateService,
+    private pdfExportService: PdfExportService
   ) {
     this.rebuildHourMarks();
   }
@@ -317,6 +321,21 @@ export class CalendarComponent implements OnInit {
     if (confirmed) {
       this.calendarService.deleteActivity(this.editingActivityId);
       this.cancelEdit();
+    }
+  }
+
+  async exportPdf(): Promise<void> {
+    if (this.isExportingPdf) return;
+
+    this.isExportingPdf = true;
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await this.pdfExportService.exportElement(this.printArea.nativeElement, `orario-famiglia-${today}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Non sono riuscito a generare il PDF. Riprova.');
+    } finally {
+      this.isExportingPdf = false;
     }
   }
 
