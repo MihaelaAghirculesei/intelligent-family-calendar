@@ -1,0 +1,29 @@
+<div class="modal-overlay" *ngIf="isVisible" (click)="hide()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>📄 Esporta PDF</h2>
+      <button class="close-btn" (click)="hide()">&times;</button>
+    </div>
+
+    <div class="export-form">
+      <label class="option-row">
+        <input type="checkbox" [(ngModel)]="includeWeekend">
+        Includi sabato e domenica
+      </label>
+
+      <label class="option-row">
+        <input type="checkbox" [(ngModel)]="singlePage">
+        Adatta tutto su una sola pagina
+      </label>
+
+      <p class="hint">
+        Escludere il weekend e/o adattare a una pagina rende le scritte più grandi e più facili da leggere da lunedì a venerdì.
+      </p>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="hide()">Annulla</button>
+        <button type="button" class="btn-primary" (click)="onConfirm()">📄 Esporta</button>
+      </div>
+    </div>
+  </div>
+</div>

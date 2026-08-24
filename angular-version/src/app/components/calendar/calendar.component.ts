@@ -10,6 +10,7 @@ import { AddActivityComponent } from '../add-activity/add-activity.component';
 import { AddPersonComponent } from '../add-person/add-person.component';
 import { SaveTemplateComponent } from '../save-template/save-template.component';
 import { TemplateListComponent } from '../template-list/template-list.component';
+import { ExportPdfOptionsComponent, PdfExportChoice } from '../export-pdf-options/export-pdf-options.component';
 import { PersonService, PersonData } from '../../services/person.service';
 import { TemplateService } from '../../services/template.service';
 import { PdfExportService } from '../../services/pdf-export.service';
@@ -28,7 +29,7 @@ interface ActivityBlock {
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent, TemplateListComponent],
+  imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent, TemplateListComponent, ExportPdfOptionsComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
@@ -37,6 +38,7 @@ export class CalendarComponent implements OnInit {
   @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
   @ViewChild('saveTemplateComponent') saveTemplateComponent!: SaveTemplateComponent;
   @ViewChild('templateListComponent') templateListComponent!: TemplateListComponent;
+  @ViewChild('exportPdfOptionsComponent') exportPdfOptionsComponent!: ExportPdfOptionsComponent;
   @ViewChild('printArea') printArea!: ElementRef<HTMLElement>;
 
   calendarData$!: Observable<CalendarData>;
@@ -324,17 +326,41 @@ export class CalendarComponent implements OnInit {
     }
   }
 
-  async exportPdf(): Promise<void> {
+  showExportPdfDialog(): void {
+    this.exportPdfOptionsComponent.show();
+  }
+
+  onExportPdfCancelled(): void {
+  }
+
+  async onExportPdfConfirmed(choice: PdfExportChoice): Promise<void> {
     if (this.isExportingPdf) return;
 
     this.isExportingPdf = true;
+    const el = this.printArea.nativeElement;
+
+    // Fix each day column to a set pixel width during export (instead of the
+    // on-screen flex:1 stretch) so hiding the weekend actually narrows the
+    // captured grid rather than letting Mon-Fri simply stretch to fill the
+    // same width — a narrower capture is what makes everything print bigger.
+    el.classList.add('pdf-export');
+    if (!choice.includeWeekend) {
+      el.classList.add('pdf-hide-weekend');
+    }
+
     try {
+      // Let the browser apply the class changes before capturing.
+      await new Promise(resolve => requestAnimationFrame(resolve));
+
       const today = new Date().toISOString().slice(0, 10);
-      await this.pdfExportService.exportElement(this.printArea.nativeElement, `orario-famiglia-${today}.pdf`);
+      await this.pdfExportService.exportElement(el, `orario-famiglia-${today}.pdf`, {
+        singlePage: choice.singlePage
+      });
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Non sono riuscito a generare il PDF. Riprova.');
     } finally {
+      el.classList.remove('pdf-export', 'pdf-hide-weekend');
       this.isExportingPdf = false;
     }
   }
