@@ -27,20 +27,24 @@ export class PdfExportService {
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
     if (options.singlePage) {
-      // Always fill the full A4-landscape width (297mm) — never shrink to
-      // fit the height too, which used to leave the calendar centered with
-      // dead space on both sides whenever it was taller than it was wide.
-      // Instead, size the *page itself* to the content's aspect ratio, so
-      // there's no leftover margin to shrink into. A printer's "fit to
-      // page" (the default in most print dialogs) then scales this custom
-      // page up to fill a real A4 sheet, enlarging the text with it.
-      const pageWidth = 297;
-      const maxWidth = pageWidth - margin * 2;
-      const imgWidth = maxWidth;
-      const imgHeight = canvas.height * (imgWidth / canvas.width);
+      // Size the page to the content's aspect ratio (so there's no leftover
+      // margin in the file itself), but never let either dimension exceed a
+      // real A4-landscape sheet (297x210mm). Filling the width unconditionally
+      // (as this used to do) can make a tall/narrow capture (e.g. weekend
+      // excluded) produce a page taller than 210mm — a real printer then
+      // shrinks the *whole page* to fit its paper, silently undoing the fix
+      // and printing everything smaller again. Bounding both dimensions up
+      // front means the page already fits a real sheet, so no printer-side
+      // rescale ever kicks in.
+      const maxContentWidth = 297 - margin * 2;
+      const maxContentHeight = 210 - margin * 2;
+      const scale = Math.min(maxContentWidth / canvas.width, maxContentHeight / canvas.height);
+      const imgWidth = canvas.width * scale;
+      const imgHeight = canvas.height * scale;
+      const pageWidth = imgWidth + margin * 2;
       const pageHeight = imgHeight + margin * 2;
 
-      const pdf = new jsPDF({ unit: 'mm', format: [pageWidth, pageHeight], orientation: 'landscape' });
+      const pdf = new jsPDF({ unit: 'mm', format: [pageWidth, pageHeight], orientation: pageWidth >= pageHeight ? 'landscape' : 'portrait' });
       pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
       pdf.save(filename);
       return;

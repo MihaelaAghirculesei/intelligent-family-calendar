@@ -205,8 +205,8 @@ h1 {
    printed. Bump them up for export, and give activity blocks a taller floor
    so the bigger text always has room to sit in. */
 .pdf-export .day-header {
-    font-size: 15px;
-    padding: 8px 4px;
+    font-size: 19px;
+    padding: 10px 4px;
 }
 
 .pdf-export .hour-gutter-header,
@@ -215,12 +215,12 @@ h1 {
 }
 
 .pdf-export .hour-label {
-    font-size: 12px;
+    font-size: 15px;
 }
 
 .pdf-export .legend-item {
-    font-size: 14px;
-    padding: 6px 14px;
+    font-size: 17px;
+    padding: 7px 16px;
 }
 
 .pdf-export .grid-activity {
@@ -228,12 +228,12 @@ h1 {
 }
 
 .pdf-export .activity-content {
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.3;
 }
 
 .pdf-export .activity-time {
-    font-size: 9px;
+    font-size: 12px;
 }
 
 .pdf-hide-weekend .day-header:nth-child(7),
