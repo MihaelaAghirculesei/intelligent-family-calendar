@@ -1,5 +1,5 @@
 export interface HistoryAction {
-  type: 'move' | 'add' | 'remove' | 'edit';
+  type: 'move' | 'add' | 'remove' | 'edit' | 'replace-week';
   activityId: string;
   originalPosition?: CellPosition | null;
   newPosition?: CellPosition | null;

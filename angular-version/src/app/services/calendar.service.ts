@@ -5,6 +5,8 @@ import { HistoryService } from './history.service';
 import { PersonService } from './person.service';
 import { TemplateActivity } from '../models/template.model';
 
+type WeekSnapshot = { day: WeekDay; activity: Activity }[];
+
 @Injectable({
   providedIn: 'root'
 })
@@ -37,6 +39,8 @@ export class CalendarService {
       this.updateActivityDirect(action.activityId, action.originalData);
     } else if (action.type === 'remove' && action.originalData && action.originalPosition) {
       this.addActivityDirect(action.originalData, action.originalPosition.day);
+    } else if (action.type === 'replace-week' && action.originalData) {
+      this.restoreWeek(action.originalData);
     }
   }
 
@@ -49,6 +53,8 @@ export class CalendarService {
       this.updateActivityDirect(action.activityId, action.newData);
     } else if (action.type === 'remove' && action.originalPosition) {
       this.removeActivityDirect(action.activityId, action.originalPosition.day);
+    } else if (action.type === 'replace-week' && action.newData) {
+      this.restoreWeek(action.newData);
     }
   }
 
@@ -280,21 +286,7 @@ export class CalendarService {
   }
 
   applyTemplate(templateActivities: TemplateActivity[]): void {
-    if (this.historyService) {
-      const currentActivities: any[] = [];
-      this.calendarData.cells.forEach((cell, day) => {
-        cell.activities.forEach(activity => {
-          currentActivities.push({ ...activity, day });
-        });
-      });
-
-      this.historyService.addAction({
-        type: 'edit',
-        activityId: 'template-clear',
-        originalData: { activities: currentActivities },
-        newData: { activities: templateActivities }
-      });
-    }
+    const before = this.snapshotWeek();
 
     this.calendarData.cells.forEach(cell => {
       cell.activities = [];
@@ -323,6 +315,37 @@ export class CalendarService {
     if (skippedCount > 0) {
       console.warn(`Template partially applied: ${addedCount} activities loaded, ${skippedCount} skipped (unknown day)`);
     }
+
+    // Applying a template replaces the whole week, so history stores a full
+    // before/after snapshot: undo/redo then restore exactly what was on screen,
+    // including the ids generated above.
+    if (this.historyService) {
+      this.historyService.addAction({
+        type: 'replace-week',
+        activityId: '',
+        originalData: before,
+        newData: this.snapshotWeek()
+      });
+    }
+
+    this.notifyChange();
+  }
+
+  private snapshotWeek(): WeekSnapshot {
+    const snapshot: WeekSnapshot = [];
+    this.calendarData.cells.forEach((cell, day) => {
+      cell.activities.forEach(activity => snapshot.push({ day, activity: { ...activity } }));
+    });
+    return snapshot;
+  }
+
+  private restoreWeek(snapshot: WeekSnapshot): void {
+    this.calendarData.cells.forEach(cell => {
+      cell.activities = [];
+    });
+    snapshot.forEach(({ day, activity }) => {
+      this.calendarData.cells.get(day)?.activities.push({ ...activity });
+    });
     this.notifyChange();
   }
 
