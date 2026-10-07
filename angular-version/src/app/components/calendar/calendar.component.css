@@ -208,8 +208,11 @@ h1 {
     width: max-content;
 }
 
+/* border-box keeps each header exactly as wide as its column despite their
+   different padding and borders, so the two rows stay aligned. */
 .pdf-export .day-header,
 .pdf-export .day-column {
+    box-sizing: border-box;
     flex: 0 0 220px;
     width: 220px;
 }
@@ -225,6 +228,7 @@ h1 {
 
 .pdf-export .hour-gutter-header,
 .pdf-export .hour-gutter {
+    box-sizing: border-box;
     width: 60px;
 }
 
