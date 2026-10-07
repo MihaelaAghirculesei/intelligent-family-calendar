@@ -5,7 +5,6 @@ import { PersonData } from '../../services/person.service';
 
 @Component({
   selector: 'app-add-person',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './add-person.component.html',
   styleUrl: './add-person.component.css'

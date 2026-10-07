@@ -7,7 +7,6 @@ import { AddPersonComponent } from '../add-person/add-person.component';
 
 @Component({
   selector: 'app-add-activity',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, AddPersonComponent],
   templateUrl: './add-activity.component.html',
   styleUrl: './add-activity.component.css'

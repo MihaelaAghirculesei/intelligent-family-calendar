@@ -3,7 +3,6 @@ import { CalendarComponent } from './components/calendar/calendar.component';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [CalendarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'

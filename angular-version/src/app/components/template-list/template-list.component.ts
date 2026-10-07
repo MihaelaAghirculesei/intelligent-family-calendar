@@ -5,7 +5,6 @@ import { WeeklyTemplate } from '../../models/template.model';
 
 @Component({
   selector: 'app-template-list',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.css'

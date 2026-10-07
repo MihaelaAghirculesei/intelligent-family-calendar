@@ -28,7 +28,6 @@ interface ActivityBlock {
 
 @Component({
   selector: 'app-calendar',
-  standalone: true,
   imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent, TemplateListComponent, ExportPdfOptionsComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'

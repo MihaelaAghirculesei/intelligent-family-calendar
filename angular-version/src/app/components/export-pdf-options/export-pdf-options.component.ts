@@ -8,7 +8,6 @@ export interface PdfExportChoice {
 
 @Component({
   selector: 'app-export-pdf-options',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './export-pdf-options.component.html',
   styleUrl: './export-pdf-options.component.css'

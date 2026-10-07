@@ -5,7 +5,6 @@ import { SaveTemplateData } from '../../models/template.model';
 
 @Component({
   selector: 'app-save-template',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './save-template.component.html',
   styleUrl: './save-template.component.css'
