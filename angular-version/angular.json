@@ -19,6 +19,7 @@
             "allowedCommonJsDependencies": [
               "core-js",
               "html2canvas",
+              "hyphen",
               "raf",
               "rgbcolor"
             ],

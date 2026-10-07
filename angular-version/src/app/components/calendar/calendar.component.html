@@ -53,7 +53,7 @@
              [class.editing]="editingActivityId === block.activity.id">
 
           <div *ngIf="editingActivityId !== block.activity.id" class="activity-content">
-            <div class="activity-title">{{ block.activity.title }}</div>
+            <div class="activity-title">{{ block.activity.title | hyphenate }}</div>
             <div class="activity-time">{{ block.activity.timeRange }}</div>
           </div>
 

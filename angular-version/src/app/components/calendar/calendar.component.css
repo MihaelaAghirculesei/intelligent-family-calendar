@@ -326,9 +326,14 @@ h1 {
     overflow: hidden;
 }
 
+/* Titles carry soft hyphens at Italian syllable breaks (HyphenatePipe), and
+   `manual` makes every browser wrap only there, showing a visible hyphen.
+   overflow-wrap stays as the last resort for a syllable wider than its block. */
 .activity-content {
     font-size: 16px;
     line-height: 1.25;
+    hyphens: manual;
+    -webkit-hyphens: manual;
 }
 
 .activity-title {

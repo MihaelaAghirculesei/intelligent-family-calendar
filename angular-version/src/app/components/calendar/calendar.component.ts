@@ -15,6 +15,7 @@ import { PersonService, PersonData } from '../../services/person.service';
 import { TemplateService } from '../../services/template.service';
 import { PdfExportService, PDF_PRINTABLE_ASPECT_RATIO } from '../../services/pdf-export.service';
 import { SaveTemplateData, WeeklyTemplate } from '../../models/template.model';
+import { HyphenatePipe } from '../../pipes/hyphenate.pipe';
 
 interface ActivityBlock {
   activity: Activity;
@@ -28,7 +29,7 @@ interface ActivityBlock {
 
 @Component({
   selector: 'app-calendar',
-  imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent, TemplateListComponent, ExportPdfOptionsComponent],
+  imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent, TemplateListComponent, ExportPdfOptionsComponent, HyphenatePipe],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })

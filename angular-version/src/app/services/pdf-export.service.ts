@@ -14,16 +14,18 @@ export const PDF_PRINTABLE_ASPECT_RATIO =
 export class PdfExportService {
 
   async exportElement(element: HTMLElement, filename: string): Promise<void> {
-    // html2canvas and jsPDF are only ever needed when a user actually exports,
-    // so load them on demand instead of bloating the initial bundle.
-    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-      import('html2canvas'),
+    // The capture and PDF libraries are only ever needed when a user actually
+    // exports, so load them on demand instead of bloating the initial bundle.
+    const [{ toCanvas }, { jsPDF }] = await Promise.all([
+      import('html-to-image'),
       import('jspdf')
     ]);
 
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
+    // html-to-image lets the browser itself render the element (via an SVG
+    // snapshot), so text wraps and hyphenates exactly as on screen. html2canvas,
+    // used before, re-implements text layout and garbled hyphenated words.
+    const canvas = await toCanvas(element, {
+      pixelRatio: 2,
       backgroundColor: '#ffffff'
     });
 
