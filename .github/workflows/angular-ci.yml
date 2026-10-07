@@ -2,10 +2,10 @@ name: Angular CI
 
 on:
   push:
-    branches: [main]
-    paths: ["angular-version/**"]
+    paths: ["angular-version/**", ".github/workflows/angular-ci.yml"]
   pull_request:
-    paths: ["angular-version/**"]
+    paths: ["angular-version/**", ".github/workflows/angular-ci.yml"]
+  workflow_dispatch:
 
 defaults:
   run:
