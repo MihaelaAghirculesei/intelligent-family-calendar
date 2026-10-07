@@ -14,7 +14,7 @@ import { ExportPdfOptionsComponent, PdfExportChoice } from '../export-pdf-option
 import { PersonService, PersonData } from '../../services/person.service';
 import { TemplateService } from '../../services/template.service';
 import { PdfExportService } from '../../services/pdf-export.service';
-import { SaveTemplateData } from '../../models/template.model';
+import { SaveTemplateData, WeeklyTemplate } from '../../models/template.model';
 
 interface ActivityBlock {
   activity: Activity;
@@ -45,7 +45,7 @@ export class CalendarComponent implements OnInit {
   canUndo$!: Observable<boolean>;
   canRedo$!: Observable<boolean>;
   connectedDropLists: string[] = [];
-  persons: any[] = [];
+  persons: PersonData[] = [];
   templateCount = 0;
   isExportingPdf = false;
 
@@ -273,9 +273,6 @@ export class CalendarComponent implements OnInit {
     this.calendarService.addActivity(event.activity, event.day);
   }
 
-  onAddActivityCancelled(): void {
-  }
-
   startEdit(activity: Activity): void {
     this.editingActivityId = activity.id;
     this.editForm = {
@@ -313,9 +310,6 @@ export class CalendarComponent implements OnInit {
     this.editForm.person = newPerson.id;
   }
 
-  onAddPersonCancelled(): void {
-  }
-
   deleteActivity(): void {
     if (!this.editingActivityId) return;
 
@@ -328,9 +322,6 @@ export class CalendarComponent implements OnInit {
 
   showExportPdfDialog(): void {
     this.exportPdfOptionsComponent.show();
-  }
-
-  onExportPdfCancelled(): void {
   }
 
   async onExportPdfConfirmed(choice: PdfExportChoice): Promise<void> {
@@ -376,22 +367,16 @@ export class CalendarComponent implements OnInit {
     }).unsubscribe();
   }
 
-  onSaveTemplateCancelled(): void {
-  }
-
   showTemplateListDialog(): void {
     this.templateListComponent.show();
   }
 
-  onTemplateApplied(template: any): void {
+  onTemplateApplied(template: WeeklyTemplate): void {
     this.calendarService.applyTemplate(template.activities);
 
     setTimeout(() => {
       const totalActivities = template.activities.length;
       alert(`Template "${template.name}" applicato con successo! ✅\n\n📋 ${totalActivities} attività caricate nel calendario`);
     }, 100);
-  }
-
-  onTemplateListCancelled(): void {
   }
 }

@@ -321,9 +321,7 @@ export class CalendarService {
     });
 
     if (skippedCount > 0) {
-      console.warn(`⚠️ Template applicato parzialmente: ${addedCount} caricate, ${skippedCount} saltate`);
-    } else {
-      console.log(`✅ Template applicato: ${addedCount} attività caricate`);
+      console.warn(`Template partially applied: ${addedCount} activities loaded, ${skippedCount} skipped (unknown day)`);
     }
     this.notifyChange();
   }
@@ -379,7 +377,6 @@ export class CalendarService {
             target.activities.push(...cell.activities);
           }
         });
-        console.log('Dati del vecchio layout a fasce orarie migrati alla nuova griglia continua');
       }
 
       this.notifyChange();
@@ -390,7 +387,7 @@ export class CalendarService {
   }
 
   private generateId(): string {
-    return 'activity_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
+    return 'activity_' + Date.now().toString() + '_' + Math.random().toString(36).slice(2, 11);
   }
 
   private notifyChange(): void {

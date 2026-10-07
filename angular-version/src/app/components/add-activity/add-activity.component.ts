@@ -107,9 +107,6 @@ export class AddActivityComponent implements OnInit {
     this.activityForm.patchValue({ person: newPerson.id });
   }
 
-  onAddPersonCancelled(): void {
-  }
-
   isAddNewPersonOption(value: string): boolean {
     return value === 'add_new_person';
   }

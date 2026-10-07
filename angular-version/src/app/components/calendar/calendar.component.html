@@ -115,26 +115,21 @@
 
   <app-add-activity
     (activityAdded)="onActivityAdded($event)"
-    (cancelled)="onAddActivityCancelled()"
     #addActivityComponent></app-add-activity>
 
   <app-add-person
     (personAdded)="onPersonAdded($event)"
-    (cancelled)="onAddPersonCancelled()"
     #addPersonComponent></app-add-person>
 
   <app-save-template
     (templateSaved)="onTemplateSaved($event)"
-    (cancelled)="onSaveTemplateCancelled()"
     #saveTemplateComponent></app-save-template>
 
   <app-template-list
     (templateApplied)="onTemplateApplied($event)"
-    (cancelled)="onTemplateListCancelled()"
     #templateListComponent></app-template-list>
 
   <app-export-pdf-options
     (exportConfirmed)="onExportPdfConfirmed($event)"
-    (cancelled)="onExportPdfCancelled()"
     #exportPdfOptionsComponent></app-export-pdf-options>
 </div>
