@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output, ViewChild, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Activity, WeekDay } from '../../models/activity.model';
 import { PersonService, PersonData } from '../../services/person.service';
@@ -7,7 +7,7 @@ import { AddPersonComponent } from '../add-person/add-person.component';
 
 @Component({
   selector: 'app-add-activity',
-  imports: [CommonModule, ReactiveFormsModule, AddPersonComponent],
+  imports: [ReactiveFormsModule, AddPersonComponent],
   templateUrl: './add-activity.component.html',
   styleUrl: './add-activity.component.css'
 })

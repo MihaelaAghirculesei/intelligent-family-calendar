@@ -1,71 +1,78 @@
-<div class="modal-overlay" *ngIf="isVisible" (click)="hide()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>📋 Template Salvati</h2>
-      <button class="close-btn" (click)="hide()">&times;</button>
-    </div>
-    
-    <div class="template-list">
-      <div *ngIf="templates.length === 0" class="empty-state">
-        <p>🔍 Nessun template salvato</p>
-        <p class="help-text">Usa "💾 Salva Template" per salvare la configurazione attuale</p>
+@if (isVisible) {
+  <div class="modal-overlay" (click)="hide()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>📋 Template Salvati</h2>
+        <button class="close-btn" (click)="hide()">&times;</button>
       </div>
-
-      <div *ngFor="let template of templates" class="template-item">
-        <div class="template-header">
-          <div class="template-info">
-            <h3 class="template-name">{{ template.name }}</h3>
-            <p class="template-description" *ngIf="template.description">{{ template.description }}</p>
+      <div class="template-list">
+        @if (templates.length === 0) {
+          <div class="empty-state">
+            <p>🔍 Nessun template salvato</p>
+            <p class="help-text">Usa "💾 Salva Template" per salvare la configurazione attuale</p>
           </div>
-          <div class="template-actions">
-            <button 
-              class="apply-btn" 
-              (click)="applyTemplate(template)"
-              title="Applica template al calendario">
-              ✅ Applica
-            </button>
-            <button 
-              class="delete-btn" 
-              (click)="deleteTemplate(template.id)"
-              title="Elimina template">
-              🗑️
-            </button>
+        }
+        @for (template of templates; track template.id) {
+          <div class="template-item">
+            <div class="template-header">
+              <div class="template-info">
+                <h3 class="template-name">{{ template.name }}</h3>
+                @if (template.description) {
+                  <p class="template-description">{{ template.description }}</p>
+                }
+              </div>
+              <div class="template-actions">
+                <button
+                  class="apply-btn"
+                  (click)="applyTemplate(template)"
+                  title="Applica template al calendario">
+                  ✅ Applica
+                </button>
+                <button
+                  class="delete-btn"
+                  (click)="deleteTemplate(template.id)"
+                  title="Elimina template">
+                  🗑️
+                </button>
+              </div>
+            </div>
+            <div class="template-details">
+              <div class="template-stat">
+                <span class="stat-label">📊 Attività:</span>
+                <span class="stat-value">{{ template.activities.length }}</span>
+              </div>
+              <div class="template-stat">
+                <span class="stat-label">📅 Creato:</span>
+                <span class="stat-value">{{ formatDate(template.createdAt) }}</span>
+              </div>
+            </div>
+            @if (template.activities.length > 0) {
+              <div class="activity-preview">
+                <p class="preview-title">🔍 Anteprima attività:</p>
+                <div class="activity-chips">
+                  @for (activity of template.activities.slice(0, 5); track activity.id) {
+                    <span
+                      class="activity-chip">
+                      {{ activity.title }}
+                    </span>
+                  }
+                  @if (template.activities.length > 5) {
+                    <span
+                      class="more-chip">
+                      +{{ template.activities.length - 5 }} altre
+                    </span>
+                  }
+                </div>
+              </div>
+            }
           </div>
-        </div>
-        
-        <div class="template-details">
-          <div class="template-stat">
-            <span class="stat-label">📊 Attività:</span>
-            <span class="stat-value">{{ template.activities.length }}</span>
-          </div>
-          <div class="template-stat">
-            <span class="stat-label">📅 Creato:</span>
-            <span class="stat-value">{{ formatDate(template.createdAt) }}</span>
-          </div>
-        </div>
-
-        <div class="activity-preview" *ngIf="template.activities.length > 0">
-          <p class="preview-title">🔍 Anteprima attività:</p>
-          <div class="activity-chips">
-            <span 
-              *ngFor="let activity of template.activities.slice(0, 5)" 
-              class="activity-chip">
-              {{ activity.title }}
-            </span>
-            <span 
-              *ngIf="template.activities.length > 5" 
-              class="more-chip">
-              +{{ template.activities.length - 5 }} altre
-            </span>
-          </div>
-        </div>
+        }
       </div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn-secondary" (click)="hide()">
-        Chiudi
-      </button>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="hide()">
+          Chiudi
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 
 export interface PdfExportChoice {
@@ -8,7 +8,7 @@ export interface PdfExportChoice {
 
 @Component({
   selector: 'app-export-pdf-options',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './export-pdf-options.component.html',
   styleUrl: './export-pdf-options.component.css'
 })

@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SaveTemplateData } from '../../models/template.model';
 
 @Component({
   selector: 'app-save-template',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './save-template.component.html',
   styleUrl: './save-template.component.css'
 })

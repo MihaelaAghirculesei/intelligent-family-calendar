@@ -1,96 +1,112 @@
-<div class="modal-overlay" *ngIf="isVisible" (click)="hide()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Aggiungi Nuova Attività</h2>
-      <button class="close-btn" (click)="hide()">&times;</button>
-    </div>
+@if (isVisible) {
+  <div class="modal-overlay" (click)="hide()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Aggiungi Nuova Attività</h2>
+        <button class="close-btn" (click)="hide()">&times;</button>
+      </div>
     
-    <form [formGroup]="activityForm" (ngSubmit)="onSubmit()" class="activity-form">
-      <div class="form-group">
-        <label for="title">Titolo *</label>
-        <input 
-          id="title" 
-          type="text" 
-          formControlName="title" 
-          placeholder="Es. Lezione di matematica"
-          [class.error]="activityForm.get('title')?.invalid && activityForm.get('title')?.touched">
-        <div class="error-message" *ngIf="getFieldError('title')">
-          {{ getFieldError('title') }}
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="person">Persona *</label>
-        <select 
-          id="person" 
-          formControlName="person"
-          (change)="onPersonChange($event)"
-          [class.error]="activityForm.get('person')?.invalid && activityForm.get('person')?.touched">
-          <option value="">Seleziona persona</option>
-          <option *ngFor="let person of persons" [value]="person.id">
-            {{ person.name }}
-          </option>
-          <option value="add_new_person" class="add-new-option">➕ Aggiungi nuova persona</option>
-        </select>
-        <div class="error-message" *ngIf="getFieldError('person')">
-          {{ getFieldError('person') }}
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="day">Giorno *</label>
-        <select 
-          id="day" 
-          formControlName="day"
-          [class.error]="activityForm.get('day')?.invalid && activityForm.get('day')?.touched">
-          <option value="">Seleziona giorno</option>
-          <option *ngFor="let day of weekDays" [value]="day.value">
-            {{ day.label }}
-          </option>
-        </select>
-        <div class="error-message" *ngIf="getFieldError('day')">
-          {{ getFieldError('day') }}
-        </div>
-      </div>
-
-      <div class="time-row">
+      <form [formGroup]="activityForm" (ngSubmit)="onSubmit()" class="activity-form">
         <div class="form-group">
-          <label for="startTime">Ora Inizio *</label>
+          <label for="title">Titolo *</label>
           <input 
-            id="startTime" 
-            type="time"
-            formControlName="startTime"
-            [class.error]="activityForm.get('startTime')?.invalid && activityForm.get('startTime')?.touched">
-          <div class="error-message" *ngIf="getFieldError('startTime')">
-            {{ getFieldError('startTime') }}
-          </div>
+            id="title" 
+            type="text" 
+            formControlName="title" 
+            placeholder="Es. Lezione di matematica"
+            [class.error]="activityForm.get('title')?.invalid && activityForm.get('title')?.touched">
+          @if (getFieldError('title')) {
+            <div class="error-message">
+              {{ getFieldError('title') }}
+            </div>
+          }
         </div>
 
         <div class="form-group">
-          <label for="endTime">Ora Fine *</label>
-          <input 
-            id="endTime" 
-            type="time"
-            formControlName="endTime"
-            [class.error]="activityForm.get('endTime')?.invalid && activityForm.get('endTime')?.touched">
-          <div class="error-message" *ngIf="getFieldError('endTime')">
-            {{ getFieldError('endTime') }}
+          <label for="person">Persona *</label>
+          <select 
+            id="person" 
+            formControlName="person"
+            (change)="onPersonChange($event)"
+            [class.error]="activityForm.get('person')?.invalid && activityForm.get('person')?.touched">
+            <option value="">Seleziona persona</option>
+            @for (person of persons; track person.id) {
+              <option [value]="person.id">
+                {{ person.name }}
+              </option>
+            }
+            <option value="add_new_person" class="add-new-option">➕ Aggiungi nuova persona</option>
+          </select>
+          @if (getFieldError('person')) {
+            <div class="error-message">
+              {{ getFieldError('person') }}
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="day">Giorno *</label>
+          <select 
+            id="day" 
+            formControlName="day"
+            [class.error]="activityForm.get('day')?.invalid && activityForm.get('day')?.touched">
+            <option value="">Seleziona giorno</option>
+            @for (day of weekDays; track day.value) {
+              <option [value]="day.value">
+                {{ day.label }}
+              </option>
+            }
+          </select>
+          @if (getFieldError('day')) {
+            <div class="error-message">
+              {{ getFieldError('day') }}
+            </div>
+          }
+        </div>
+
+        <div class="time-row">
+          <div class="form-group">
+            <label for="startTime">Ora Inizio *</label>
+            <input 
+              id="startTime" 
+              type="time"
+              formControlName="startTime"
+              [class.error]="activityForm.get('startTime')?.invalid && activityForm.get('startTime')?.touched">
+            @if (getFieldError('startTime')) {
+              <div class="error-message">
+                {{ getFieldError('startTime') }}
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="endTime">Ora Fine *</label>
+            <input 
+              id="endTime" 
+              type="time"
+              formControlName="endTime"
+              [class.error]="activityForm.get('endTime')?.invalid && activityForm.get('endTime')?.touched">
+            @if (getFieldError('endTime')) {
+              <div class="error-message">
+                {{ getFieldError('endTime') }}
+              </div>
+            }
           </div>
         </div>
-      </div>
 
-      <div class="form-actions">
-        <button type="button" class="btn-secondary" (click)="hide()">
-          Annulla
-        </button>
-        <button type="submit" class="btn-primary" [disabled]="activityForm.invalid">
-          Aggiungi Attività
-        </button>
-      </div>
-    </form>
-  </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="hide()">
+            Annulla
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="activityForm.invalid">
+            Aggiungi Attività
+          </button>
+        </div>
+      </form>
+    </div>
   
-  <app-add-person
-    (personAdded)="onPersonAdded($event)"
-    #addPersonComponent></app-add-person>
-</div>
+    <app-add-person
+      (personAdded)="onPersonAdded($event)"
+      #addPersonComponent></app-add-person>
+  </div>
+}

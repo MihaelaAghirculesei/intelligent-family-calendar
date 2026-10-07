@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TemplateService } from '../../services/template.service';
 import { WeeklyTemplate } from '../../models/template.model';
 
 @Component({
   selector: 'app-template-list',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.css'
 })

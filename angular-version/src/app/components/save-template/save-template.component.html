@@ -1,55 +1,61 @@
-<div class="modal-overlay" *ngIf="isVisible" (click)="hide()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>💾 Salva come Template</h2>
-      <button class="close-btn" (click)="hide()">&times;</button>
-    </div>
+@if (isVisible) {
+  <div class="modal-overlay" (click)="hide()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>💾 Salva come Template</h2>
+        <button class="close-btn" (click)="hide()">&times;</button>
+      </div>
     
-    <form [formGroup]="templateForm" (ngSubmit)="onSubmit()" class="template-form">
-      <div class="form-group">
-        <label for="name">Nome Template *</label>
-        <input 
-          id="name" 
-          type="text" 
-          formControlName="name" 
-          placeholder="Es. Settimana Scolastica"
-          [class.error]="templateForm.get('name')?.invalid && templateForm.get('name')?.touched">
-        <div class="error-message" *ngIf="getFieldError('name')">
-          {{ getFieldError('name') }}
+      <form [formGroup]="templateForm" (ngSubmit)="onSubmit()" class="template-form">
+        <div class="form-group">
+          <label for="name">Nome Template *</label>
+          <input 
+            id="name" 
+            type="text" 
+            formControlName="name" 
+            placeholder="Es. Settimana Scolastica"
+            [class.error]="templateForm.get('name')?.invalid && templateForm.get('name')?.touched">
+          @if (getFieldError('name')) {
+            <div class="error-message">
+              {{ getFieldError('name') }}
+            </div>
+          }
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="description">Descrizione (opzionale)</label>
-        <textarea 
-          id="description" 
-          formControlName="description" 
-          placeholder="Es. Leo a scuola, Mia danza, Anna basket"
-          rows="3"
-          [class.error]="templateForm.get('description')?.invalid && templateForm.get('description')?.touched">
-        </textarea>
-        <div class="error-message" *ngIf="getFieldError('description')">
-          {{ getFieldError('description') }}
+        <div class="form-group">
+          <label for="description">Descrizione (opzionale)</label>
+          <textarea 
+            id="description" 
+            formControlName="description" 
+            placeholder="Es. Leo a scuola, Mia danza, Anna basket"
+            rows="3"
+            [class.error]="templateForm.get('description')?.invalid && templateForm.get('description')?.touched">
+          </textarea>
+          @if (getFieldError('description')) {
+            <div class="error-message">
+              {{ getFieldError('description') }}
+            </div>
+          }
         </div>
-      </div>
 
-      <div class="template-info">
-        <p><strong>ℹ️ Cosa verrà salvato:</strong></p>
-        <ul>
-          <li>Tutte le attività presenti nel calendario</li>
-          <li>Posizioni e orari delle attività</li>
-          <li>Persone assegnate a ogni attività</li>
-        </ul>
-      </div>
+        <div class="template-info">
+          <p><strong>ℹ️ Cosa verrà salvato:</strong></p>
+          <ul>
+            <li>Tutte le attività presenti nel calendario</li>
+            <li>Posizioni e orari delle attività</li>
+            <li>Persone assegnate a ogni attività</li>
+          </ul>
+        </div>
 
-      <div class="form-actions">
-        <button type="button" class="btn-secondary" (click)="hide()">
-          Annulla
-        </button>
-        <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
-          💾 Salva Template
-        </button>
-      </div>
-    </form>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="hide()">
+            Annulla
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
+            💾 Salva Template
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
+}

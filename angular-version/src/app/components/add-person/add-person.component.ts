@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PersonData } from '../../services/person.service';
 
 @Component({
   selector: 'app-add-person',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './add-person.component.html',
   styleUrl: './add-person.component.css'
 })

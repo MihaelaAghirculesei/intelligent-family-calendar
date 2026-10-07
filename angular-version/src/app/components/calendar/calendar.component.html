@@ -1,135 +1,144 @@
-<div class="container" *ngIf="calendarData$ | async as calendarData">
-  <div class="header-row">
-    <h1>Orario Settimanale Famiglia</h1>
-    <div class="header-buttons">
-      <button class="add-btn" (click)="showAddActivityForm()">➕ Aggiungi Attività</button>
-      <button class="template-btn" (click)="showSaveTemplateDialog()">💾 Salva Template</button>
-      <button class="template-list-btn" (click)="showTemplateListDialog()">📋 Template ({{ templateCount }})</button>
-      <button class="export-btn" [disabled]="isExportingPdf" (click)="showExportPdfDialog()">
-        {{ isExportingPdf ? '⏳ Esportazione...' : '📄 Esporta PDF' }}
-      </button>
-    </div>
-  </div>
-
-  <div #printArea>
-    <div class="legend">
-      <div
-        *ngFor="let person of persons"
-        class="legend-item"
-        [style.background-color]="person.color">
-        {{ person.name }}
+@if (calendarData$ | async; as calendarData) {
+  <div class="container">
+    <div class="header-row">
+      <h1>Orario Settimanale Famiglia</h1>
+      <div class="header-buttons">
+        <button class="add-btn" (click)="showAddActivityForm()">➕ Aggiungi Attività</button>
+        <button class="template-btn" (click)="showSaveTemplateDialog()">💾 Salva Template</button>
+        <button class="template-list-btn" (click)="showTemplateListDialog()">📋 Template ({{ templateCount }})</button>
+        <button class="export-btn" [disabled]="isExportingPdf" (click)="showExportPdfDialog()">
+          {{ isExportingPdf ? '⏳ Esportazione...' : '📄 Esporta PDF' }}
+        </button>
       </div>
     </div>
 
-    <div class="calendar-grid">
-      <div class="grid-header">
-        <div class="hour-gutter-header"></div>
-        <div class="day-header" *ngFor="let label of weekDayLabels">{{ label }}</div>
+    <div #printArea>
+      <div class="legend">
+        @for (person of persons; track person.id) {
+          <div class="legend-item" [style.background-color]="person.color">
+            {{ person.name }}
+          </div>
+        }
       </div>
 
-    <div class="grid-body" [style.height.px]="gridHeightPx" cdkDropListGroup>
-      <div class="hour-gutter">
-        <div class="hour-label" *ngFor="let h of hourMarks" [style.top.px]="(h - gridStartHour) * 60">
-          {{ hourLabel(h) }}
+      <div class="calendar-grid">
+        <div class="grid-header">
+          <div class="hour-gutter-header"></div>
+          @for (label of weekDayLabels; track label) {
+            <div class="day-header">{{ label }}</div>
+          }
         </div>
-      </div>
 
-      <div class="day-column"
-           *ngFor="let day of weekDays"
-           [attr.data-day]="day"
-           cdkDropList
-           [id]="day"
-           [cdkDropListData]="getCell(calendarData, day)?.activities || []"
-           [cdkDropListConnectedTo]="connectedDropLists"
-           (cdkDropListDropped)="onDrop($event, day)">
-
-        <div class="grid-activity draggable-activity"
-             *ngFor="let block of dayBlocks[day]"
-             cdkDrag
-             [cdkDragData]="block.activity"
-             [ngStyle]="getBlockStyle(block)"
-             [style.background-color]="getPersonColor(block.activity.person)"
-             (dblclick)="startEdit(block.activity)"
-             [class.editing]="editingActivityId === block.activity.id">
-
-          <div *ngIf="editingActivityId !== block.activity.id" class="activity-content">
-            <div class="activity-title">{{ block.activity.title | hyphenate }}</div>
-            <div class="activity-time">{{ block.activity.timeRange }}</div>
+        <div class="grid-body" [style.height.px]="gridHeightPx" cdkDropListGroup>
+          <div class="hour-gutter">
+            @for (h of hourMarks; track h) {
+              <div class="hour-label" [style.top.px]="(h - gridStartHour) * 60">
+                {{ hourLabel(h) }}
+              </div>
+            }
           </div>
 
-          <div *ngIf="editingActivityId === block.activity.id" class="edit-form" (click)="$event.stopPropagation()">
-            <input [(ngModel)]="editForm.title"
-                   class="edit-input title-input"
-                   placeholder="Titolo"
-                   (keyup.enter)="saveEdit()"
-                   (keyup.escape)="cancelEdit()"
-                   #titleInput>
-            <input [(ngModel)]="editForm.timeRange"
-                   class="edit-input time-input"
-                   placeholder="Orario (es. 15:00-16:00)"
-                   (keyup.enter)="saveEdit()"
-                   (keyup.escape)="cancelEdit()">
-            <div class="person-selector">
-              <select [(ngModel)]="editForm.person" class="edit-select">
-                <option *ngFor="let person of persons" [value]="person.id">
-                  {{ person.name }}
-                </option>
-              </select>
-              <button type="button"
-                      class="add-person-btn"
-                      (click)="showAddPersonForm()"
-                      title="Aggiungi nuova persona">
-                ➕
-              </button>
+          @for (day of weekDays; track day) {
+            <div class="day-column"
+                 [attr.data-day]="day"
+                 cdkDropList
+                 [id]="day"
+                 [cdkDropListData]="getCell(calendarData, day)?.activities || []"
+                 [cdkDropListConnectedTo]="connectedDropLists"
+                 (cdkDropListDropped)="onDrop($event, day)">
+
+              @for (block of dayBlocks[day]; track block.activity.id) {
+                <div class="grid-activity draggable-activity"
+                     cdkDrag
+                     [cdkDragData]="block.activity"
+                     [ngStyle]="getBlockStyle(block)"
+                     [style.background-color]="getPersonColor(block.activity.person)"
+                     (dblclick)="startEdit(block.activity)"
+                     [class.editing]="editingActivityId === block.activity.id">
+
+                  @if (editingActivityId === block.activity.id) {
+                    <div class="edit-form" (click)="$event.stopPropagation()">
+                      <input [(ngModel)]="editForm.title"
+                             class="edit-input title-input"
+                             placeholder="Titolo"
+                             (keyup.enter)="saveEdit()"
+                             (keyup.escape)="cancelEdit()"
+                             #titleInput>
+                      <input [(ngModel)]="editForm.timeRange"
+                             class="edit-input time-input"
+                             placeholder="Orario (es. 15:00-16:00)"
+                             (keyup.enter)="saveEdit()"
+                             (keyup.escape)="cancelEdit()">
+                      <div class="person-selector">
+                        <select [(ngModel)]="editForm.person" class="edit-select">
+                          @for (person of persons; track person.id) {
+                            <option [value]="person.id">{{ person.name }}</option>
+                          }
+                        </select>
+                        <button type="button"
+                                class="add-person-btn"
+                                (click)="showAddPersonForm()"
+                                title="Aggiungi nuova persona">
+                          ➕
+                        </button>
+                      </div>
+                      <div class="edit-buttons">
+                        <button (click)="onUndo()"
+                                [disabled]="!(canUndo$ | async)"
+                                class="undo-btn"
+                                title="Annulla">↶</button>
+                        <button (click)="onRedo()"
+                                [disabled]="!(canRedo$ | async)"
+                                class="redo-btn"
+                                title="Ripeti">↷</button>
+                        <button (click)="deleteActivity()"
+                                class="delete-btn"
+                                title="Elimina attività">🗑️</button>
+                        <button (click)="saveEdit()" class="save-btn">✓</button>
+                        <button (click)="cancelEdit()" class="cancel-btn">✕</button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="activity-content">
+                      <div class="activity-title">{{ block.activity.title | hyphenate }}</div>
+                      <div class="activity-time">{{ block.activity.timeRange }}</div>
+                    </div>
+                  }
+                </div>
+              }
             </div>
-            <div class="edit-buttons">
-              <button (click)="onUndo()"
-                      [disabled]="!(canUndo$ | async)"
-                      class="undo-btn"
-                      title="Annulla">↶</button>
-              <button (click)="onRedo()"
-                      [disabled]="!(canRedo$ | async)"
-                      class="redo-btn"
-                      title="Ripeti">↷</button>
-              <button (click)="deleteActivity()"
-                      class="delete-btn"
-                      title="Elimina attività">🗑️</button>
-              <button (click)="saveEdit()" class="save-btn">✓</button>
-              <button (click)="cancelEdit()" class="cancel-btn">✕</button>
-            </div>
-          </div>
+          }
         </div>
       </div>
     </div>
+
+    <div class="bottom-controls">
+      <button class="control-btn"
+              [disabled]="!(canUndo$ | async)"
+              (click)="onUndo()">↶ Annulla</button>
+      <button class="control-btn"
+              [disabled]="!(canRedo$ | async)"
+              (click)="onRedo()">↷ Ripeti</button>
     </div>
+
+    <app-add-activity
+      (activityAdded)="onActivityAdded($event)"
+      #addActivityComponent></app-add-activity>
+
+    <app-add-person
+      (personAdded)="onPersonAdded($event)"
+      #addPersonComponent></app-add-person>
+
+    <app-save-template
+      (templateSaved)="onTemplateSaved($event)"
+      #saveTemplateComponent></app-save-template>
+
+    <app-template-list
+      (templateApplied)="onTemplateApplied($event)"
+      #templateListComponent></app-template-list>
+
+    <app-export-pdf-options
+      (exportConfirmed)="onExportPdfConfirmed($event)"
+      #exportPdfOptionsComponent></app-export-pdf-options>
   </div>
-
-  <div class="bottom-controls">
-    <button class="control-btn"
-            [disabled]="!(canUndo$ | async)"
-            (click)="onUndo()">↶ Annulla</button>
-    <button class="control-btn"
-            [disabled]="!(canRedo$ | async)"
-            (click)="onRedo()">↷ Ripeti</button>
-  </div>
-
-  <app-add-activity
-    (activityAdded)="onActivityAdded($event)"
-    #addActivityComponent></app-add-activity>
-
-  <app-add-person
-    (personAdded)="onPersonAdded($event)"
-    #addPersonComponent></app-add-person>
-
-  <app-save-template
-    (templateSaved)="onTemplateSaved($event)"
-    #saveTemplateComponent></app-save-template>
-
-  <app-template-list
-    (templateApplied)="onTemplateApplied($event)"
-    #templateListComponent></app-template-list>
-
-  <app-export-pdf-options
-    (exportConfirmed)="onExportPdfConfirmed($event)"
-    #exportPdfOptionsComponent></app-export-pdf-options>
-</div>
+}
