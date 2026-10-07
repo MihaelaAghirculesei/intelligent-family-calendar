@@ -13,7 +13,7 @@ import { TemplateListComponent } from '../template-list/template-list.component'
 import { ExportPdfOptionsComponent, PdfExportChoice } from '../export-pdf-options/export-pdf-options.component';
 import { PersonService, PersonData } from '../../services/person.service';
 import { TemplateService } from '../../services/template.service';
-import { PdfExportService } from '../../services/pdf-export.service';
+import { PdfExportService, PDF_PRINTABLE_ASPECT_RATIO } from '../../services/pdf-export.service';
 import { SaveTemplateData, WeeklyTemplate } from '../../models/template.model';
 
 interface ActivityBlock {
@@ -361,6 +361,8 @@ export class CalendarComponent implements OnInit {
     try {
       // Let the browser apply the class changes before capturing.
       await new Promise(resolve => requestAnimationFrame(resolve));
+      this.fitDayColumnsToPage(el);
+      await new Promise(resolve => requestAnimationFrame(resolve));
 
       const today = new Date().toISOString().slice(0, 10);
       await this.pdfExportService.exportElement(el, `orario-famiglia-${today}.pdf`, {
@@ -371,7 +373,26 @@ export class CalendarComponent implements OnInit {
       alert('Non sono riuscito a generare il PDF. Riprova.');
     } finally {
       el.classList.remove('pdf-export', 'pdf-hide-weekend');
+      el.style.removeProperty('--pdf-day-width');
       this.isExportingPdf = false;
+    }
+  }
+
+  // Widen or narrow the day columns so the captured area has the same
+  // proportions as the printable part of an A4-landscape sheet. The grid's
+  // height is fixed by its hours, so only the width needs adjusting; a second
+  // pass absorbs borders and rounding.
+  private fitDayColumnsToPage(el: HTMLElement): void {
+    const visibleDays = Array.from(el.querySelectorAll<HTMLElement>('.day-column'))
+      .filter(column => column.offsetParent !== null);
+    if (visibleDays.length === 0) return;
+
+    const targetWidth = el.offsetHeight * PDF_PRINTABLE_ASPECT_RATIO;
+    let dayWidth = visibleDays[0].getBoundingClientRect().width;
+
+    for (let pass = 0; pass < 2; pass++) {
+      dayWidth += (targetWidth - el.offsetWidth) / visibleDays.length;
+      el.style.setProperty('--pdf-day-width', `${Math.max(dayWidth, 80)}px`);
     }
   }
 

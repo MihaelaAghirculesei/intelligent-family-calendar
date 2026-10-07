@@ -4,6 +4,14 @@ export interface PdfExportOptions {
   singlePage: boolean;
 }
 
+// A4 landscape with a uniform margin. The calendar sizes its columns to this
+// printable area's aspect ratio before capturing, so the image fills the sheet.
+const PAGE_WIDTH_MM = 297;
+const PAGE_HEIGHT_MM = 210;
+const MARGIN_MM = 8;
+export const PDF_PRINTABLE_ASPECT_RATIO =
+  (PAGE_WIDTH_MM - MARGIN_MM * 2) / (PAGE_HEIGHT_MM - MARGIN_MM * 2);
+
 @Injectable({
   providedIn: 'root'
 })
@@ -23,29 +31,28 @@ export class PdfExportService {
       backgroundColor: '#ffffff'
     });
 
-    const margin = 8;
+    const margin = MARGIN_MM;
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
-    if (options.singlePage) {
-      // Size the page to the content's aspect ratio (so there's no leftover
-      // margin in the file itself), but never let either dimension exceed a
-      // real A4-landscape sheet (297x210mm). Filling the width unconditionally
-      // (as this used to do) can make a tall/narrow capture (e.g. weekend
-      // excluded) produce a page taller than 210mm — a real printer then
-      // shrinks the *whole page* to fit its paper, silently undoing the fix
-      // and printing everything smaller again. Bounding both dimensions up
-      // front means the page already fits a real sheet, so no printer-side
-      // rescale ever kicks in.
-      const maxContentWidth = 297 - margin * 2;
-      const maxContentHeight = 210 - margin * 2;
+    // A capture that overshoots one page by a hair (rounding in the column
+    // fitting) is shrunk onto that page instead of spilling a sliver onto a
+    // nearly blank second one.
+    const widthFitHeightMm = canvas.height * (PAGE_WIDTH_MM - margin * 2) / canvas.width;
+    const fitsOnOnePage = widthFitHeightMm <= (PAGE_HEIGHT_MM - margin * 2) * 1.01;
+
+    if (options.singlePage || fitsOnOnePage) {
+      // Always emit a real A4-landscape sheet, so a printer never rescales the
+      // page, and fit the capture inside its margins. The capture is already
+      // shaped like the printable area, so it fills the sheet edge to edge;
+      // any small leftover from rounding is split evenly left and right.
+      const maxContentWidth = PAGE_WIDTH_MM - margin * 2;
+      const maxContentHeight = PAGE_HEIGHT_MM - margin * 2;
       const scale = Math.min(maxContentWidth / canvas.width, maxContentHeight / canvas.height);
       const imgWidth = canvas.width * scale;
       const imgHeight = canvas.height * scale;
-      const pageWidth = imgWidth + margin * 2;
-      const pageHeight = imgHeight + margin * 2;
 
-      const pdf = new jsPDF({ unit: 'mm', format: [pageWidth, pageHeight], orientation: pageWidth >= pageHeight ? 'landscape' : 'portrait' });
-      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+      pdf.addImage(imgData, 'JPEG', (PAGE_WIDTH_MM - imgWidth) / 2, margin, imgWidth, imgHeight);
       pdf.save(filename);
       return;
     }

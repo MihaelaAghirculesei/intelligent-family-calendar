@@ -208,13 +208,15 @@ h1 {
     width: max-content;
 }
 
-/* border-box keeps each header exactly as wide as its column despite their
+/* --pdf-day-width is set by the component right before capturing, so that
+   the grid takes on the printable page's proportions; 220px is a fallback.
+   border-box keeps each header exactly as wide as its column despite their
    different padding and borders, so the two rows stay aligned. */
 .pdf-export .day-header,
 .pdf-export .day-column {
     box-sizing: border-box;
-    flex: 0 0 220px;
-    width: 220px;
+    flex: 0 0 var(--pdf-day-width, 220px);
+    width: var(--pdf-day-width, 220px);
 }
 
 /* On-screen font sizes are tuned to be compact on a monitor; a printed page
