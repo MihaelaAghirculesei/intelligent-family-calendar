@@ -16,6 +16,12 @@
             "outputPath": "dist/intelligent-family-calendar-angular",
             "index": "src/index.html",
             "browser": "src/main.ts",
+            "allowedCommonJsDependencies": [
+              "core-js",
+              "html2canvas",
+              "raf",
+              "rgbcolor"
+            ],
             "polyfills": [
               "zone.js"
             ],
