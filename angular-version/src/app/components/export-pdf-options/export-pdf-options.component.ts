@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 export interface PdfExportChoice {
-  singlePage: boolean;
   includeWeekend: boolean;
 }
 
@@ -19,7 +18,6 @@ export class ExportPdfOptionsComponent {
   @Output() cancelled = new EventEmitter<void>();
 
   isVisible = false;
-  singlePage = false;
   includeWeekend = true;
 
   show(): void {
@@ -34,7 +32,6 @@ export class ExportPdfOptionsComponent {
   onConfirm(): void {
     this.isVisible = false;
     this.exportConfirmed.emit({
-      singlePage: this.singlePage,
       includeWeekend: this.includeWeekend
     });
   }

@@ -365,9 +365,7 @@ export class CalendarComponent implements OnInit {
       await new Promise(resolve => requestAnimationFrame(resolve));
 
       const today = new Date().toISOString().slice(0, 10);
-      await this.pdfExportService.exportElement(el, `orario-famiglia-${today}.pdf`, {
-        singlePage: choice.singlePage
-      });
+      await this.pdfExportService.exportElement(el, `orario-famiglia-${today}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Non sono riuscito a generare il PDF. Riprova.');
