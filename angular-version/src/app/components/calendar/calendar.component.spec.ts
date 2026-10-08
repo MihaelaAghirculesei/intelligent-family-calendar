@@ -78,6 +78,31 @@ describe('CalendarComponent', () => {
     });
   });
 
+  describe('hover details', () => {
+    const blockElement = () =>
+      fixture.nativeElement.querySelector('.grid-activity') as HTMLElement;
+    const card = () =>
+      fixture.nativeElement.querySelector('.activity-details') as HTMLElement | null;
+
+    beforeEach(() => {
+      add('Swimming lesson', '16:00-17:00');
+      fixture.detectChanges();
+    });
+
+    it('shows the full title, person and time while hovering a block', () => {
+      blockElement().dispatchEvent(new MouseEvent('mouseenter'));
+      fixture.detectChanges();
+
+      expect(card()?.textContent).toContain('Swimming lesson');
+      expect(card()?.textContent).toContain('16:00-17:00');
+
+      blockElement().dispatchEvent(new MouseEvent('mouseleave'));
+      fixture.detectChanges();
+
+      expect(card()).toBeNull();
+    });
+  });
+
   describe('keyboard shortcuts', () => {
     beforeEach(() => {
       add('a', '10:00-11:00');

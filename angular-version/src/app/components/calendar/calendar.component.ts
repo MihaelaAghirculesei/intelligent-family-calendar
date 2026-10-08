@@ -17,6 +17,13 @@ import { PdfExportService, PDF_PRINTABLE_ASPECT_RATIO } from '../../services/pdf
 import { SaveTemplateData, WeeklyTemplate } from '../../models/template.model';
 import { HyphenatePipe } from '../../pipes/hyphenate.pipe';
 
+interface ActivityDetails {
+  activity: Activity;
+  top: number;
+  left: number;
+  alignRight: boolean;
+}
+
 interface ActivityBlock {
   activity: Activity;
   style: {
@@ -49,6 +56,7 @@ export class CalendarComponent implements OnInit {
   persons: PersonData[] = [];
   templateCount = 0;
   isExportingPdf = false;
+  activityDetails: ActivityDetails | null = null;
 
   editingActivityId: string | null = null;
   editForm: {
@@ -124,6 +132,31 @@ export class CalendarComponent implements OnInit {
 
   getPersonColor(person: string): string {
     return this.personService.getPersonColor(person);
+  }
+
+  getPersonName(person: string): string {
+    return this.personService.getPersonById(person)?.name ?? person;
+  }
+
+  // Narrow side-by-side blocks cut long titles short, so hovering any block
+  // shows its full details next to it, on whichever side has room.
+  showDetails(event: MouseEvent, activity: Activity): void {
+    if (this.editingActivityId) return;
+
+    const cardWidth = 260;
+    const gap = 8;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const alignRight = rect.right + gap + cardWidth > window.innerWidth;
+    this.activityDetails = {
+      activity,
+      top: Math.max(gap, Math.min(rect.top, window.innerHeight - 120)),
+      left: alignRight ? rect.left - gap : rect.right + gap,
+      alignRight
+    };
+  }
+
+  hideDetails(): void {
+    this.activityDetails = null;
   }
 
   hourLabel(hour: number): string {
@@ -297,6 +330,7 @@ export class CalendarComponent implements OnInit {
   }
 
   startEdit(activity: Activity): void {
+    this.hideDetails();
     this.editingActivityId = activity.id;
     this.editForm = {
       title: activity.title,

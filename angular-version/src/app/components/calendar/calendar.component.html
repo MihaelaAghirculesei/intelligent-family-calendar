@@ -58,6 +58,9 @@
                      [ngStyle]="getBlockStyle(block)"
                      [style.background-color]="getPersonColor(block.activity.person)"
                      (dblclick)="startEdit(block.activity)"
+                     (mouseenter)="showDetails($event, block.activity)"
+                     (mouseleave)="hideDetails()"
+                     (cdkDragStarted)="hideDetails()"
                      [class.editing]="editingActivityId === block.activity.id">
 
                   @if (editingActivityId === block.activity.id) {
@@ -121,6 +124,23 @@
         </div>
       </div>
     </div>
+
+    @if (activityDetails; as details) {
+      <div class="activity-details"
+           role="tooltip"
+           [class.align-right]="details.alignRight"
+           [style.top.px]="details.top"
+           [style.left.px]="details.left">
+        <div class="details-title">{{ details.activity.title }}</div>
+        <div class="details-row">
+          <span class="details-dot" [style.background-color]="getPersonColor(details.activity.person)"></span>
+          {{ getPersonName(details.activity.person) }}
+        </div>
+        @if (details.activity.timeRange) {
+          <div class="details-row">🕒 {{ details.activity.timeRange }}</div>
+        }
+      </div>
+    }
 
     <div class="bottom-controls">
       <button class="control-btn"

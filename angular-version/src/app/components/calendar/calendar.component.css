@@ -326,9 +326,10 @@ h1 {
     overflow: hidden;
 }
 
-/* Titles carry soft hyphens at Italian syllable breaks (HyphenatePipe), and
+/* Titles carry soft hyphens at syllable breaks (HyphenatePipe), and
    `manual` makes every browser wrap only there, showing a visible hyphen.
-   overflow-wrap stays as the last resort for a syllable wider than its block. */
+   A word that still doesn't fit is never split at a random letter: its line
+   ends with an ellipsis instead, and the hover card shows the full title. */
 .activity-content {
     font-size: 16px;
     line-height: 1.25;
@@ -342,7 +343,6 @@ h1 {
     -webkit-line-clamp: 4;
     overflow: hidden;
     white-space: normal;
-    overflow-wrap: break-word;
     text-overflow: ellipsis;
 }
 
@@ -541,6 +541,45 @@ h1 {
         flex-wrap: wrap;
         gap: 8px;
     }
+}
+
+/* Hover card with the full details of an activity. Fixed to the viewport
+   and outside the print area, so it never ends up in the PDF. */
+.activity-details {
+    position: fixed;
+    z-index: 2000;
+    max-width: 260px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #333333;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.activity-details.align-right {
+    transform: translateX(-100%);
+}
+
+.details-title {
+    margin-bottom: 6px;
+    font-weight: bold;
+    overflow-wrap: break-word;
+}
+
+.details-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.details-dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
 }
 
 @media print {
