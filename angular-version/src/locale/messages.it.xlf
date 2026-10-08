@@ -762,6 +762,106 @@ Questa azione non può essere annullata.</target>
           <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="8475686227620118454" datatype="html">
+        <source>Swimming</source>
+        <target>Nuoto</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8310444298675193147" datatype="html">
+        <source>Piano lesson</source>
+        <target>Lezione di piano</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7463138560092381882" datatype="html">
+        <source>Dance</source>
+        <target>Danza</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7218402062013011946" datatype="html">
+        <source>Yoga</source>
+        <target>Yoga</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5967998955481602616" datatype="html">
+        <source>Football practice</source>
+        <target>Allenamento di calcio</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1886200082876268733" datatype="html">
+        <source>Homework club</source>
+        <target>Doposcuola</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4338694631344317742" datatype="html">
+        <source>Guitar</source>
+        <target>Chitarra</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3701867342415866321" datatype="html">
+        <source>Football match</source>
+        <target>Partita di calcio</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3800498309209111695" datatype="html">
+        <source>Birthday party</source>
+        <target>Festa di compleanno</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7984777987062352904" datatype="html">
+        <source>Grocery shopping</source>
+        <target>Spesa</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9099121471164431783" datatype="html">
+        <source>School</source>
+        <target>Scuola</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/services/calendar.service.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
     </body>
   </file>
 </xliff>

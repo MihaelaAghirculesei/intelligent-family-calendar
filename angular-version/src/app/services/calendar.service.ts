@@ -75,50 +75,30 @@ export class CalendarService {
     return { cells, weekDays };
   }
 
+  // A made-up week shown on a first visit only: as soon as anything is
+  // saved, the stored calendar is loaded instead.
   private loadInitialData(): void {
-    this.placeActivity('chitarra', 'wednesday');
-    this.placeActivity('danza-mer', 'wednesday');
-    this.placeActivity('batteria', 'thursday');
-    this.placeActivity('danza-ven', 'friday');
-    this.placeActivity('danza-mart', 'tuesday');
-    this.placeActivity('basket', 'tuesday');
-    this.placeActivity('piano', 'wednesday');
-    this.placeActivity('flauto-solo', 'wednesday');
-    this.placeActivity('flauto-gruppo', 'thursday');
-    this.placeActivity('scout', 'friday');
-    this.placeActivity('piscina-mia', 'monday');
-    this.placeActivity('piscina-leo', 'tuesday');
-    this.notifyChange();
-  }
-
-  private placeActivity(activityId: string, day: WeekDay): void {
-    const cell = this.calendarData.cells.get(day);
-
-    if (cell) {
-      const activity = this.findActivityById(activityId);
-      if (activity) {
-        cell.activities.push(activity);
-      }
-    }
-  }
-
-  private findActivityById(id: string): Activity | undefined {
-    const activityMap: Record<string, Activity> = {
-      'chitarra': { id: 'chitarra', title: 'Chitarra', person: 'leo', timeRange: '13:45-15:30' },
-      'danza-mer': { id: 'danza-mer', title: 'Danza (se possibile)', person: 'mia', timeRange: '15:45-17:30' },
-      'batteria': { id: 'batteria', title: 'Batteria', person: 'leo', timeRange: '15:30-17:00' },
-      'danza-ven': { id: 'danza-ven', title: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
-      'danza-mart': { id: 'danza-mart', title: 'Danza', person: 'mia', timeRange: '15:45-17:30' },
-      'basket': { id: 'basket', title: 'Basket', person: 'anna', timeRange: '17:15-18:30' },
-      'piano': { id: 'piano', title: 'Piano', person: 'leo', timeRange: '17:00-18:00' },
-      'flauto-solo': { id: 'flauto-solo', title: 'Flauto Solo', person: 'mia', timeRange: '17:30-18:15' },
-      'flauto-gruppo': { id: 'flauto-gruppo', title: 'Flauto Gruppo', person: 'mia', timeRange: '16:35-17:35' },
-      'scout': { id: 'scout', title: 'Scout', person: 'leo', timeRange: '17:15-19:15' },
-      'piscina-mia': { id: 'piscina-mia', title: 'Piscina', person: 'mia', timeRange: '19:00-20:00' },
-      'piscina-leo': { id: 'piscina-leo', title: 'Piscina', person: 'leo', timeRange: '20:00-21:30' }
-    };
-
-    return activityMap[id];
+    const demoWeek: WeekSnapshot = [
+      { day: 'monday', activity: { id: 'demo-1', title: $localize`Swimming`, person: 'leo', timeRange: '16:00-17:00' } },
+      { day: 'monday', activity: { id: 'demo-2', title: $localize`Piano lesson`, person: 'mia', timeRange: '17:30-18:15' } },
+      { day: 'tuesday', activity: { id: 'demo-3', title: $localize`Dance`, person: 'mia', timeRange: '16:30-18:00' } },
+      { day: 'tuesday', activity: { id: 'demo-4', title: $localize`Yoga`, person: 'anna', timeRange: '19:00-20:00' } },
+      { day: 'wednesday', activity: { id: 'demo-5', title: $localize`Football practice`, person: 'leo', timeRange: '17:00-18:30' } },
+      { day: 'wednesday', activity: { id: 'demo-6', title: $localize`Homework club`, person: 'mia', timeRange: '17:30-18:30' } },
+      { day: 'thursday', activity: { id: 'demo-7', title: $localize`Swimming`, person: 'mia', timeRange: '16:00-17:00' } },
+      { day: 'thursday', activity: { id: 'demo-8', title: $localize`Guitar`, person: 'leo', timeRange: '18:00-18:45' } },
+      { day: 'friday', activity: { id: 'demo-9', title: $localize`Football practice`, person: 'leo', timeRange: '17:00-18:30' } },
+      { day: 'saturday', activity: { id: 'demo-10', title: $localize`Football match`, person: 'leo', timeRange: '10:00-12:00' } },
+      { day: 'saturday', activity: { id: 'demo-11', title: $localize`Birthday party`, person: 'mia', timeRange: '15:00-18:00' } },
+      { day: 'sunday', activity: { id: 'demo-12', title: $localize`Grocery shopping`, person: 'anna', timeRange: '10:00-11:00' } }
+    ];
+    const schoolDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const school: WeekSnapshot = schoolDays.flatMap(day => [
+      { day, activity: { id: `demo-school-anna-${day}`, title: $localize`School`, person: 'anna', timeRange: '07:45-14:00' } },
+      { day, activity: { id: `demo-school-leo-${day}`, title: $localize`School`, person: 'leo', timeRange: '08:00-13:30' } },
+      { day, activity: { id: `demo-school-mia-${day}`, title: $localize`School`, person: 'mia', timeRange: '08:30-16:00' } }
+    ]);
+    this.restoreWeek([...school, ...demoWeek]);
   }
 
   moveActivity(activityId: string, fromDay: WeekDay, toDay: WeekDay): boolean {

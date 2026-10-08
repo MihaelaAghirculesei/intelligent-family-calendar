@@ -55,7 +55,7 @@ export class CalendarComponent implements OnInit {
     title: string;
     timeRange: string;
     person: Person;
-  } = { title: '', timeRange: '', person: 'anna' };
+  } = { title: '', timeRange: '', person: '' };
 
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   weekDayLabels = [
@@ -320,7 +320,7 @@ export class CalendarComponent implements OnInit {
 
   cancelEdit(): void {
     this.editingActivityId = null;
-    const firstPerson = this.persons.length > 0 ? this.persons[0].id : 'anna';
+    const firstPerson = this.persons.length > 0 ? this.persons[0].id : '';
     this.editForm = { title: '', timeRange: '', person: firstPerson };
   }
 
