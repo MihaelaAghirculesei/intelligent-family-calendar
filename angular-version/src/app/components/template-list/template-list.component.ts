@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { TemplateService } from '../../services/template.service';
 import { WeeklyTemplate } from '../../models/template.model';
@@ -7,7 +7,8 @@ import { WeeklyTemplate } from '../../models/template.model';
   selector: 'app-template-list',
   imports: [],
   templateUrl: './template-list.component.html',
-  styleUrl: './template-list.component.css'
+  styleUrl: './template-list.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class TemplateListComponent implements OnInit {
   @Output() templateDeleted = new EventEmitter<string>();

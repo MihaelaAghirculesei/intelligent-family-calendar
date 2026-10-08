@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ViewChild, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Activity, WeekDay } from '../../models/activity.model';
@@ -9,7 +9,8 @@ import { AddPersonComponent } from '../add-person/add-person.component';
   selector: 'app-add-activity',
   imports: [ReactiveFormsModule, AddPersonComponent],
   templateUrl: './add-activity.component.html',
-  styleUrl: './add-activity.component.css'
+  styleUrl: './add-activity.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AddActivityComponent implements OnInit {
   @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;

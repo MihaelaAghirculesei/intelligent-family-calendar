@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SaveTemplateData } from '../../models/template.model';
@@ -7,7 +7,8 @@ import { SaveTemplateData } from '../../models/template.model';
   selector: 'app-save-template',
   imports: [ReactiveFormsModule],
   templateUrl: './save-template.component.html',
-  styleUrl: './save-template.component.css'
+  styleUrl: './save-template.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class SaveTemplateComponent {
   @Output() templateSaved = new EventEmitter<SaveTemplateData>();

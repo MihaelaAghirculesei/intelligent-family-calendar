@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PersonData } from '../../services/person.service';
@@ -7,7 +7,8 @@ import { PersonData } from '../../services/person.service';
   selector: 'app-add-person',
   imports: [ReactiveFormsModule],
   templateUrl: './add-person.component.html',
-  styleUrl: './add-person.component.css'
+  styleUrl: './add-person.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AddPersonComponent {
   @Output() personAdded = new EventEmitter<PersonData>();

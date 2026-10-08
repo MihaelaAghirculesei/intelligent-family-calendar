@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
@@ -10,7 +10,8 @@ export interface PdfExportChoice {
   selector: 'app-export-pdf-options',
   imports: [FormsModule],
   templateUrl: './export-pdf-options.component.html',
-  styleUrl: './export-pdf-options.component.css'
+  styleUrl: './export-pdf-options.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class ExportPdfOptionsComponent {
   @Output() exportConfirmed = new EventEmitter<PdfExportChoice>();
