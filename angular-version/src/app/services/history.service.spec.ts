@@ -21,10 +21,10 @@ describe('HistoryService', () => {
   });
 
   it('starts with nothing to undo or redo', () => {
-    expect(history.canUndo()).toBeFalse();
-    expect(history.canRedo()).toBeFalse();
-    expect(history.undo()).toBeFalse();
-    expect(history.redo()).toBeFalse();
+    expect(history.canUndo()).toBe(false);
+    expect(history.canRedo()).toBe(false);
+    expect(history.undo()).toBe(false);
+    expect(history.redo()).toBe(false);
   });
 
   it('undoes and redoes actions in order', () => {
@@ -34,12 +34,12 @@ describe('HistoryService', () => {
     history.undo();
     history.undo();
     expect(undone.map(a => a.activityId)).toEqual(['b', 'a']);
-    expect(history.canUndo()).toBeFalse();
+    expect(history.canUndo()).toBe(false);
 
     history.redo();
     expect(redone.map(a => a.activityId)).toEqual(['a']);
-    expect(history.canUndo()).toBeTrue();
-    expect(history.canRedo()).toBeTrue();
+    expect(history.canUndo()).toBe(true);
+    expect(history.canRedo()).toBe(true);
   });
 
   it('drops the redo branch when a new action is recorded after an undo', () => {
@@ -49,7 +49,7 @@ describe('HistoryService', () => {
 
     history.addAction(move('c'));
 
-    expect(history.canRedo()).toBeFalse();
+    expect(history.canRedo()).toBe(false);
     expect(history.getHistorySize()).toBe(2);
   });
 

@@ -32,4 +32,4 @@ jobs:
         run: npx ng build --configuration production
 
       - name: Unit tests
-        run: npx ng test --watch=false --browsers=ChromeHeadless
+        run: npx ng test --watch=false

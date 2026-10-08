@@ -97,7 +97,7 @@ describe('CalendarService', () => {
   });
 
   it('skips template activities with an unknown day', () => {
-    spyOn(console, 'warn');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     calendar.applyTemplate([
       { id: 't1', title: 'Swim', person: 'p1', day: 'wednesday' },

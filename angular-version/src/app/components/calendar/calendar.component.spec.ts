@@ -81,8 +81,8 @@ describe('CalendarComponent', () => {
   describe('keyboard shortcuts', () => {
     beforeEach(() => {
       add('a', '10:00-11:00');
-      spyOn(history, 'undo').and.callThrough();
-      spyOn(history, 'redo').and.callThrough();
+      vi.spyOn(history, 'undo');
+      vi.spyOn(history, 'redo');
     });
 
     it('undoes with Ctrl+Z and redoes with Ctrl+Y or Ctrl+Shift+Z', () => {
