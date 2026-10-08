@@ -16,6 +16,7 @@ export class AddPersonComponent {
 
   personForm: FormGroup;
   isVisible = false;
+  readonly previewLabel = $localize`Preview`;
 
   predefinedColors = [
     '#F44336', '#E53935', '#D32F2F', '#C62828', '#B71C1C',
@@ -110,17 +111,18 @@ export class AddPersonComponent {
   getFieldError(fieldName: string): string {
     const field = this.personForm.get(fieldName);
     if (field?.errors && field.touched) {
-      if (field.errors['required']) return `${this.getFieldDisplayName(fieldName)} è obbligatorio`;
-      if (field.errors['minlength']) return `${this.getFieldDisplayName(fieldName)} deve avere almeno 2 caratteri`;
-      if (field.errors['maxlength']) return `${this.getFieldDisplayName(fieldName)} deve avere massimo 20 caratteri`;
+      const label = this.getFieldDisplayName(fieldName);
+      if (field.errors['required']) return $localize`${label}:field: is required`;
+      if (field.errors['minlength']) return $localize`${label}:field: must be at least 2 characters`;
+      if (field.errors['maxlength']) return $localize`${label}:field: must be at most 20 characters`;
     }
     return '';
   }
 
   private getFieldDisplayName(fieldName: string): string {
     const displayNames: Record<string, string> = {
-      'name': 'Nome',
-      'color': 'Colore'
+      'name': $localize`Name`,
+      'color': $localize`Color`
     };
     return displayNames[fieldName] || fieldName;
   }

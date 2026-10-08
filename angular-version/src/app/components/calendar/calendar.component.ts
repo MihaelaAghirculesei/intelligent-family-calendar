@@ -58,7 +58,10 @@ export class CalendarComponent implements OnInit {
   } = { title: '', timeRange: '', person: 'anna' };
 
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  weekDayLabels = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+  weekDayLabels = [
+    $localize`Monday`, $localize`Tuesday`, $localize`Wednesday`, $localize`Thursday`,
+    $localize`Friday`, $localize`Saturday`, $localize`Sunday`
+  ];
 
   // Continuous time grid, like Google Calendar: activities are positioned
   // by their real start/end time instead of a fixed row per time slot.
@@ -333,7 +336,7 @@ export class CalendarComponent implements OnInit {
   deleteActivity(): void {
     if (!this.editingActivityId) return;
 
-    const confirmed = confirm('Sei sicuro di voler eliminare questa attività?');
+    const confirmed = confirm($localize`Are you sure you want to delete this activity?`);
     if (confirmed) {
       this.calendarService.deleteActivity(this.editingActivityId);
       this.cancelEdit();
@@ -366,10 +369,10 @@ export class CalendarComponent implements OnInit {
       await new Promise(resolve => requestAnimationFrame(resolve));
 
       const today = new Date().toISOString().slice(0, 10);
-      await this.pdfExportService.exportElement(el, `orario-famiglia-${today}.pdf`);
+      await this.pdfExportService.exportElement(el, $localize`family-schedule` + `-${today}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Non sono riuscito a generare il PDF. Riprova.');
+      alert($localize`Could not generate the PDF. Please try again.`);
     } finally {
       el.classList.remove('pdf-export', 'pdf-hide-weekend');
       el.style.removeProperty('--pdf-day-width');
@@ -402,7 +405,8 @@ export class CalendarComponent implements OnInit {
   onTemplateSaved(templateData: SaveTemplateData): void {
     this.calendarService.calendar$.subscribe(calendarData => {
       const savedTemplate = this.templateService.saveCurrentWeekAsTemplate(calendarData, templateData);
-      alert(`Template "${savedTemplate.name}" salvato con successo! 💾\n\nAttività salvate: ${savedTemplate.activities.length}`);
+      const { name, activities } = savedTemplate;
+      alert($localize`Template "${name}:name:" saved! 💾\n\nActivities saved: ${activities.length}:count:`);
     }).unsubscribe();
   }
 
@@ -415,7 +419,7 @@ export class CalendarComponent implements OnInit {
 
     setTimeout(() => {
       const totalActivities = template.activities.length;
-      alert(`Template "${template.name}" applicato con successo! ✅\n\n📋 ${totalActivities} attività caricate nel calendario`);
+      alert($localize`Template "${template.name}:name:" applied! ✅\n\n📋 ${totalActivities}:count: activities loaded into the calendar`);
     }, 100);
   }
 }

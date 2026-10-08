@@ -29,7 +29,7 @@ export class SaveTemplateComponent {
     this.templateForm.reset();
     
     const now = new Date();
-    const defaultName = `Template ${now.getDate()}/${now.getMonth() + 1}`;
+    const defaultName = $localize`Template ${now.getDate()}:day:/${now.getMonth() + 1}:month:`;
     this.templateForm.patchValue({ name: defaultName });
   }
 
@@ -52,11 +52,11 @@ export class SaveTemplateComponent {
   getFieldError(fieldName: string): string {
     const field = this.templateForm.get(fieldName);
     if (field?.errors && field.touched) {
-      if (field.errors['required']) return 'Nome è obbligatorio';
-      if (field.errors['minlength']) return 'Nome deve avere almeno 2 caratteri';
+      if (field.errors['required']) return $localize`Name is required`;
+      if (field.errors['minlength']) return $localize`Name must be at least 2 characters`;
       if (field.errors['maxlength']) {
-        if (fieldName === 'name') return 'Nome non può superare 50 caratteri';
-        if (fieldName === 'description') return 'Descrizione non può superare 200 caratteri';
+        if (fieldName === 'name') return $localize`Name cannot exceed 50 characters`;
+        if (fieldName === 'description') return $localize`Description cannot exceed 200 characters`;
       }
     }
     return '';

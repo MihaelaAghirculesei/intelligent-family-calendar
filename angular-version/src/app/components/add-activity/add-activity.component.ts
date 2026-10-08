@@ -22,13 +22,13 @@ export class AddActivityComponent implements OnInit {
   persons: PersonData[] = [];
 
   weekDays: {value: WeekDay, label: string}[] = [
-    { value: 'monday', label: 'Lunedì' },
-    { value: 'tuesday', label: 'Martedì' },
-    { value: 'wednesday', label: 'Mercoledì' },
-    { value: 'thursday', label: 'Giovedì' },
-    { value: 'friday', label: 'Venerdì' },
-    { value: 'saturday', label: 'Sabato' },
-    { value: 'sunday', label: 'Domenica' }
+    { value: 'monday', label: $localize`Monday` },
+    { value: 'tuesday', label: $localize`Tuesday` },
+    { value: 'wednesday', label: $localize`Wednesday` },
+    { value: 'thursday', label: $localize`Thursday` },
+    { value: 'friday', label: $localize`Friday` },
+    { value: 'saturday', label: $localize`Saturday` },
+    { value: 'sunday', label: $localize`Sunday` }
   ];
 
   constructor(private fb: FormBuilder, private personService: PersonService) {
@@ -80,20 +80,21 @@ export class AddActivityComponent implements OnInit {
   getFieldError(fieldName: string): string {
     const field = this.activityForm.get(fieldName);
     if (field?.errors && field.touched) {
-      if (field.errors['required']) return `${this.getFieldDisplayName(fieldName)} è obbligatorio`;
-      if (field.errors['minlength']) return `${this.getFieldDisplayName(fieldName)} deve avere almeno 2 caratteri`;
-      if (field.errors['pattern']) return `Formato orario non valido (es. 09:30)`;
+      const label = this.getFieldDisplayName(fieldName);
+      if (field.errors['required']) return $localize`${label}:field: is required`;
+      if (field.errors['minlength']) return $localize`${label}:field: must be at least 2 characters`;
+      if (field.errors['pattern']) return $localize`Invalid time format (e.g. 09:30)`;
     }
     return '';
   }
 
   private getFieldDisplayName(fieldName: string): string {
     const displayNames: Record<string, string> = {
-      'title': 'Titolo',
-      'person': 'Persona',
-      'day': 'Giorno',
-      'startTime': 'Ora inizio',
-      'endTime': 'Ora fine'
+      'title': $localize`Title`,
+      'person': $localize`Person`,
+      'day': $localize`Day`,
+      'startTime': $localize`Start time`,
+      'endTime': $localize`End time`
     };
     return displayNames[fieldName] || fieldName;
   }

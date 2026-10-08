@@ -2,14 +2,14 @@
   <div class="modal-overlay" (click)="hide()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>📋 Template Salvati</h2>
+        <h2 i18n>📋 Saved templates</h2>
         <button class="close-btn" (click)="hide()">&times;</button>
       </div>
       <div class="template-list">
         @if (templates.length === 0) {
           <div class="empty-state">
-            <p>🔍 Nessun template salvato</p>
-            <p class="help-text">Usa "💾 Salva Template" per salvare la configurazione attuale</p>
+            <p i18n>🔍 No saved templates</p>
+            <p class="help-text" i18n>Use "💾 Save template" to save the current week</p>
           </div>
         }
         @for (template of templates; track template.id) {
@@ -25,30 +25,33 @@
                 <button
                   class="apply-btn"
                   (click)="applyTemplate(template)"
-                  title="Applica template al calendario">
-                  ✅ Applica
+                  title="Apply template to the calendar"
+                  i18n-title
+                  i18n>
+                  ✅ Apply
                 </button>
                 <button
                   class="delete-btn"
                   (click)="deleteTemplate(template.id)"
-                  title="Elimina template">
+                  title="Delete template"
+                  i18n-title>
                   🗑️
                 </button>
               </div>
             </div>
             <div class="template-details">
               <div class="template-stat">
-                <span class="stat-label">📊 Attività:</span>
+                <span class="stat-label" i18n>📊 Activities:</span>
                 <span class="stat-value">{{ template.activities.length }}</span>
               </div>
               <div class="template-stat">
-                <span class="stat-label">📅 Creato:</span>
+                <span class="stat-label" i18n>📅 Created:</span>
                 <span class="stat-value">{{ formatDate(template.createdAt) }}</span>
               </div>
             </div>
             @if (template.activities.length > 0) {
               <div class="activity-preview">
-                <p class="preview-title">🔍 Anteprima attività:</p>
+                <p class="preview-title" i18n>🔍 Activity preview:</p>
                 <div class="activity-chips">
                   @for (activity of template.activities.slice(0, 5); track activity.id) {
                     <span
@@ -58,8 +61,9 @@
                   }
                   @if (template.activities.length > 5) {
                     <span
-                      class="more-chip">
-                      +{{ template.activities.length - 5 }} altre
+                      class="more-chip"
+                      i18n>
+                      +{{ template.activities.length - 5 }} more
                     </span>
                   }
                 </div>
@@ -69,8 +73,8 @@
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="hide()">
-          Chiudi
+        <button type="button" class="btn-secondary" (click)="hide()" i18n>
+          Close
         </button>
       </div>
     </div>

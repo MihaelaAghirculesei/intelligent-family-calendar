@@ -2,18 +2,19 @@
   <div class="modal-overlay" (click)="hide()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Aggiungi Nuova Persona</h2>
+        <h2 i18n>Add new person</h2>
         <button class="close-btn" (click)="hide()">&times;</button>
       </div>
     
       <form [formGroup]="personForm" (ngSubmit)="onSubmit()" class="person-form">
         <div class="form-group">
-          <label for="name">Nome Persona *</label>
+          <label for="name" i18n>Name *</label>
           <input 
             id="name" 
             type="text" 
             formControlName="name" 
-            placeholder="Es. Marco, Sofia..."
+            placeholder="E.g. Anna, Leo..."
+            i18n-placeholder
             [class.error]="personForm.get('name')?.invalid && personForm.get('name')?.touched">
           @if (getFieldError('name')) {
             <div class="error-message">
@@ -23,7 +24,7 @@
         </div>
 
         <div class="form-group">
-          <label for="color">Colore *</label>
+          <label for="color" i18n>Color *</label>
           <div class="color-selection">
             <div class="color-grid">
               @for (color of predefinedColors; track color) {
@@ -37,7 +38,7 @@
               }
             </div>
             <div class="custom-color">
-              <label for="customColor">O scegli un colore personalizzato:</label>
+              <label for="customColor" i18n>Or pick a custom color:</label>
               <input 
                 id="customColor"
                 type="color" 
@@ -47,17 +48,17 @@
           </div>
           <div class="color-preview">
             <div class="preview-box" [style.background-color]="personForm.get('color')?.value">
-              <span>{{ personForm.get('name')?.value || 'Anteprima' }}</span>
+              <span>{{ personForm.get('name')?.value || previewLabel }}</span>
             </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="hide()">
-            Annulla
+          <button type="button" class="btn-secondary" (click)="hide()" i18n>
+            Cancel
           </button>
-          <button type="submit" class="btn-primary" [disabled]="personForm.invalid">
-            Aggiungi Persona
+          <button type="submit" class="btn-primary" [disabled]="personForm.invalid" i18n>
+            Add person
           </button>
         </div>
       </form>

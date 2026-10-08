@@ -2,18 +2,19 @@
   <div class="modal-overlay" (click)="hide()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Aggiungi Nuova Attività</h2>
+        <h2 i18n>Add new activity</h2>
         <button class="close-btn" (click)="hide()">&times;</button>
       </div>
     
       <form [formGroup]="activityForm" (ngSubmit)="onSubmit()" class="activity-form">
         <div class="form-group">
-          <label for="title">Titolo *</label>
+          <label for="title" i18n>Title *</label>
           <input 
             id="title" 
             type="text" 
             formControlName="title" 
-            placeholder="Es. Lezione di matematica"
+            placeholder="E.g. Math lesson"
+            i18n-placeholder
             [class.error]="activityForm.get('title')?.invalid && activityForm.get('title')?.touched">
           @if (getFieldError('title')) {
             <div class="error-message">
@@ -23,19 +24,19 @@
         </div>
 
         <div class="form-group">
-          <label for="person">Persona *</label>
+          <label for="person" i18n>Person *</label>
           <select 
             id="person" 
             formControlName="person"
             (change)="onPersonChange($event)"
             [class.error]="activityForm.get('person')?.invalid && activityForm.get('person')?.touched">
-            <option value="">Seleziona persona</option>
+            <option value="" i18n>Select a person</option>
             @for (person of persons; track person.id) {
               <option [value]="person.id">
                 {{ person.name }}
               </option>
             }
-            <option value="add_new_person" class="add-new-option">➕ Aggiungi nuova persona</option>
+            <option value="add_new_person" class="add-new-option" i18n>➕ Add new person</option>
           </select>
           @if (getFieldError('person')) {
             <div class="error-message">
@@ -45,12 +46,12 @@
         </div>
 
         <div class="form-group">
-          <label for="day">Giorno *</label>
+          <label for="day" i18n>Day *</label>
           <select 
             id="day" 
             formControlName="day"
             [class.error]="activityForm.get('day')?.invalid && activityForm.get('day')?.touched">
-            <option value="">Seleziona giorno</option>
+            <option value="" i18n>Select a day</option>
             @for (day of weekDays; track day.value) {
               <option [value]="day.value">
                 {{ day.label }}
@@ -66,7 +67,7 @@
 
         <div class="time-row">
           <div class="form-group">
-            <label for="startTime">Ora Inizio *</label>
+            <label for="startTime" i18n>Start time *</label>
             <input 
               id="startTime" 
               type="time"
@@ -80,7 +81,7 @@
           </div>
 
           <div class="form-group">
-            <label for="endTime">Ora Fine *</label>
+            <label for="endTime" i18n>End time *</label>
             <input 
               id="endTime" 
               type="time"
@@ -95,11 +96,11 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="hide()">
-            Annulla
+          <button type="button" class="btn-secondary" (click)="hide()" i18n>
+            Cancel
           </button>
-          <button type="submit" class="btn-primary" [disabled]="activityForm.invalid">
-            Aggiungi Attività
+          <button type="submit" class="btn-primary" [disabled]="activityForm.invalid" i18n>
+            Add activity
           </button>
         </div>
       </form>

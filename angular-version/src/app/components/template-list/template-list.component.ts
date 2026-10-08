@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy, LOCALE_ID, inject } from '@angular/core';
 
 import { TemplateService } from '../../services/template.service';
 import { WeeklyTemplate } from '../../models/template.model';
@@ -17,6 +17,7 @@ export class TemplateListComponent implements OnInit {
 
   templates: WeeklyTemplate[] = [];
   isVisible = false;
+  private readonly locale = inject(LOCALE_ID);
 
   constructor(private templateService: TemplateService) {}
 
@@ -36,7 +37,7 @@ export class TemplateListComponent implements OnInit {
   }
 
   applyTemplate(template: WeeklyTemplate): void {
-    const confirmed = confirm(`Applicare il template "${template.name}" al calendario?\n\n⚠️ Questo sostituirà tutte le attività attuali con quelle del template (${template.activities.length} attività).`);
+    const confirmed = confirm($localize`Apply the template "${template.name}:name:" to the calendar?\n\n⚠️ This replaces all current activities with the ${template.activities.length}:count: activities of the template.`);
     if (confirmed) {
       this.templateApplied.emit(template);
       this.hide();
@@ -47,7 +48,7 @@ export class TemplateListComponent implements OnInit {
     const template = this.templates.find(t => t.id === templateId);
     if (!template) return;
 
-    const confirmed = confirm(`Sei sicuro di voler eliminare il template "${template.name}"?\n\nQuesta azione non può essere annullata.`);
+    const confirmed = confirm($localize`Are you sure you want to delete the template "${template.name}:name:"?\n\nThis cannot be undone.`);
     if (confirmed) {
       this.templateService.deleteTemplate(templateId);
       this.templateDeleted.emit(templateId);
@@ -58,7 +59,7 @@ export class TemplateListComponent implements OnInit {
     if (typeof date === 'string') {
       date = new Date(date);
     }
-    return date.toLocaleDateString('it-IT', { 
+    return date.toLocaleDateString(this.locale, { 
       day: '2-digit', 
       month: '2-digit', 
       year: 'numeric',

@@ -2,20 +2,20 @@
   <div class="modal-overlay" (click)="hide()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>📄 Esporta PDF</h2>
+        <h2 i18n>📄 Export PDF</h2>
         <button class="close-btn" (click)="hide()">&times;</button>
       </div>
       <div class="export-form">
-        <label class="option-row">
+        <label class="option-row" i18n>
           <input type="checkbox" [(ngModel)]="includeWeekend">
-          Includi sabato e domenica
+          Include Saturday and Sunday
         </label>
-        <p class="hint">
-          Il PDF riempie sempre un foglio A4 orizzontale. Senza il weekend, le colonne da lunedì a venerdì diventano più larghe.
+        <p class="hint" i18n>
+          The PDF always fills a landscape A4 sheet. Without the weekend, the Monday to Friday columns get wider.
         </p>
         <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="hide()">Annulla</button>
-          <button type="button" class="btn-primary" (click)="onConfirm()">📄 Esporta</button>
+          <button type="button" class="btn-secondary" (click)="hide()" i18n>Cancel</button>
+          <button type="button" class="btn-primary" (click)="onConfirm()" i18n>📄 Export</button>
         </div>
       </div>
     </div>

@@ -2,18 +2,19 @@
   <div class="modal-overlay" (click)="hide()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>💾 Salva come Template</h2>
+        <h2 i18n>💾 Save as template</h2>
         <button class="close-btn" (click)="hide()">&times;</button>
       </div>
     
       <form [formGroup]="templateForm" (ngSubmit)="onSubmit()" class="template-form">
         <div class="form-group">
-          <label for="name">Nome Template *</label>
+          <label for="name" i18n>Template name *</label>
           <input 
             id="name" 
             type="text" 
             formControlName="name" 
-            placeholder="Es. Settimana Scolastica"
+            placeholder="E.g. School week"
+            i18n-placeholder
             [class.error]="templateForm.get('name')?.invalid && templateForm.get('name')?.touched">
           @if (getFieldError('name')) {
             <div class="error-message">
@@ -23,11 +24,12 @@
         </div>
 
         <div class="form-group">
-          <label for="description">Descrizione (opzionale)</label>
+          <label for="description" i18n>Description (optional)</label>
           <textarea 
             id="description" 
             formControlName="description" 
-            placeholder="Es. Leo a scuola, Mia danza, Anna basket"
+            placeholder="E.g. Anna at school, Leo swimming, Mia football"
+            i18n-placeholder
             rows="3"
             [class.error]="templateForm.get('description')?.invalid && templateForm.get('description')?.touched">
           </textarea>
@@ -39,20 +41,20 @@
         </div>
 
         <div class="template-info">
-          <p><strong>ℹ️ Cosa verrà salvato:</strong></p>
+          <p i18n><strong>ℹ️ What will be saved:</strong></p>
           <ul>
-            <li>Tutte le attività presenti nel calendario</li>
-            <li>Posizioni e orari delle attività</li>
-            <li>Persone assegnate a ogni attività</li>
+            <li i18n>All activities in the calendar</li>
+            <li i18n>Days and times of each activity</li>
+            <li i18n>The person assigned to each activity</li>
           </ul>
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="hide()">
-            Annulla
+          <button type="button" class="btn-secondary" (click)="hide()" i18n>
+            Cancel
           </button>
-          <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
-            💾 Salva Template
+          <button type="submit" class="btn-primary" [disabled]="templateForm.invalid" i18n>
+            💾 Save template
           </button>
         </div>
       </form>
