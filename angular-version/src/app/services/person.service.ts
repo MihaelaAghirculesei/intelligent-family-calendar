@@ -8,29 +8,29 @@ export interface PersonData {
   isDefault: boolean;
 }
 
+const STORAGE_KEY = 'persons';
+// Before the full list was stored, only people added by hand were saved here.
+const LEGACY_CUSTOM_KEY = 'customPersons';
+
 @Injectable({
   providedIn: 'root'
 })
 export class PersonService {
-  private defaultPersons: PersonData[] = [
+  private readonly defaultPersons: PersonData[] = [
     { id: 'anna', name: 'Anna', color: '#2196F3', isDefault: true },
     { id: 'mia', name: 'Mia', color: '#E91E63', isDefault: true },
     { id: 'leo', name: 'Leo', color: '#4CAF50', isDefault: true }
   ];
 
-  private customPersons: PersonData[] = [];
-  private personsSubject = new BehaviorSubject<PersonData[]>(this.defaultPersons);
-
-  constructor() {
-    this.loadCustomPersons();
-  }
+  private persons: PersonData[] = this.loadPersons();
+  private personsSubject = new BehaviorSubject<PersonData[]>(this.getAllPersons());
 
   get persons$(): Observable<PersonData[]> {
     return this.personsSubject.asObservable();
   }
 
   getAllPersons(): PersonData[] {
-    return [...this.defaultPersons, ...this.customPersons];
+    return [...this.persons];
   }
 
   addPerson(name: string, color: string): PersonData {
@@ -41,24 +41,24 @@ export class PersonService {
       isDefault: false
     };
 
-    this.customPersons.push(newPerson);
-    this.saveCustomPersons();
+    this.persons.push(newPerson);
+    this.savePersons();
     this.updatePersonsSubject();
     return newPerson;
   }
 
   removePerson(id: string): boolean {
-    const person = this.customPersons.find(p => p.id === id);
+    const person = this.persons.find(p => p.id === id);
     if (!person || person.isDefault) return false;
 
-    this.customPersons = this.customPersons.filter(p => p.id !== id);
-    this.saveCustomPersons();
+    this.persons = this.persons.filter(p => p.id !== id);
+    this.savePersons();
     this.updatePersonsSubject();
     return true;
   }
 
   getPersonById(id: string): PersonData | undefined {
-    return this.getAllPersons().find(p => p.id === id);
+    return this.persons.find(p => p.id === id);
   }
 
   getPersonColor(personId: string): string {
@@ -71,7 +71,7 @@ export class PersonService {
     let id = baseId;
     let counter = 1;
 
-    while (this.getAllPersons().some(p => p.id === id)) {
+    while (this.persons.some(p => p.id === id)) {
       id = `${baseId}${counter}`;
       counter++;
     }
@@ -83,23 +83,34 @@ export class PersonService {
     this.personsSubject.next(this.getAllPersons());
   }
 
-  private saveCustomPersons(): void {
+  private savePersons(): void {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('customPersons', JSON.stringify(this.customPersons));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.persons));
     }
   }
 
-  private loadCustomPersons(): void {
-    if (typeof localStorage !== 'undefined') {
-      const saved = localStorage.getItem('customPersons');
+  // The family is stored like the calendar, so the built-in defaults only
+  // seed a fresh calendar and can change without touching existing ones.
+  // On the first run after this change, the defaults plus anyone added by
+  // hand are written out once; the legacy key is left in place.
+  private loadPersons(): PersonData[] {
+    if (typeof localStorage === 'undefined') {
+      return [...this.defaultPersons];
+    }
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        try {
-          this.customPersons = JSON.parse(saved);
-          this.updatePersonsSubject();
-        } catch (e) {
-          console.error('Failed to load custom persons:', e);
-        }
+        return JSON.parse(saved);
       }
+
+      const legacyCustom = localStorage.getItem(LEGACY_CUSTOM_KEY);
+      const persons = [...this.defaultPersons, ...(legacyCustom ? JSON.parse(legacyCustom) : [])];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persons));
+      return persons;
+    } catch (e) {
+      console.error('Failed to load persons:', e);
+      return [...this.defaultPersons];
     }
   }
 }
