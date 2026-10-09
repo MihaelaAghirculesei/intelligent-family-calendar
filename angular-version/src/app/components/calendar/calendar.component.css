@@ -299,8 +299,14 @@ h1 {
     transform: translateY(calc(-50% + 10px));
 }
 
+/* The PDF captures exactly the grid, so the first and last labels would be
+   cut in half at its top and bottom edges: keep both fully inside it. */
 .pdf-export .hour-label:first-child {
-    transform: translateY(-50%);
+    transform: none;
+}
+
+.pdf-export .hour-label:last-child {
+    transform: translateY(-100%);
 }
 
 .day-column {
