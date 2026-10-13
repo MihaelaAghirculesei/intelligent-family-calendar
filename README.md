@@ -42,6 +42,9 @@ The family and the schedule in the screenshots are made up.
 - **English and Italian UI** from the same code base.
 - **Saved in the browser** (`localStorage`), with migrations for data written
   by older versions.
+- **JSON backups.** Export the week, family members and templates to one file,
+  and import it again in any browser; the file is fully checked before
+  anything is replaced.
 
 **Italian version** of the same week:
 
@@ -155,10 +158,11 @@ that changes the app.
 
 ## Limitations
 
-- **One device, one week.** Data lives in the browser's `localStorage`: no
-  accounts, no sync, and no way yet to export, import or back up the data.
-  The calendar is a template week, not dated events, so there is no
-  recurrence or calendar sync.
+- **No accounts or sync.** Data lives in the browser's `localStorage`;
+  moving it to another browser or device takes a manual JSON export and
+  import.
+- **One template week.** The calendar holds a typical week, not dated events,
+  so there is no recurrence or calendar sync.
 - **Drag and drop changes the day, not the time.** Times are edited in the
   edit form.
 - **Mouse-first.** The hover details have no touch equivalent yet; on narrow
