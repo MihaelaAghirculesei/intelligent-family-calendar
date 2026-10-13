@@ -9,6 +9,11 @@
 A weekly planner for a family with several kids: school, sports and music
 lessons in one color-coded week that fits on a single printed A4 page.
 
+**[Live demo](https://mihaelaaghirculesei.github.io/intelligent-family-calendar/)**
+([English](https://mihaelaaghirculesei.github.io/intelligent-family-calendar/en-US/) ·
+[Italiano](https://mihaelaaghirculesei.github.io/intelligent-family-calendar/it/)).
+It starts with a made-up family; changes stay in your own browser.
+
 ![Weekly view](docs/screenshots/week-en.png)
 
 ## Why it exists
