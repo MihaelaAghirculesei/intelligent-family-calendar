@@ -79,13 +79,13 @@ export class CalendarService {
   // saved, the stored calendar is loaded instead.
   private loadInitialData(): void {
     const demoWeek: WeekSnapshot = [
-      { day: 'monday', activity: { id: 'demo-1', title: $localize`Swimming`, person: 'leo', timeRange: '16:00-17:00' } },
+      { day: 'monday', activity: { id: 'demo-1', title: $localize`Swimming`, person: 'leo', timeRange: '16:30-17:30' } },
       { day: 'monday', activity: { id: 'demo-2', title: $localize`Piano lesson`, person: 'mia', timeRange: '17:30-18:15' } },
       { day: 'tuesday', activity: { id: 'demo-3', title: $localize`Dance`, person: 'mia', timeRange: '16:30-18:00' } },
       { day: 'tuesday', activity: { id: 'demo-4', title: $localize`Yoga`, person: 'anna', timeRange: '19:00-20:00' } },
       { day: 'wednesday', activity: { id: 'demo-5', title: $localize`Football practice`, person: 'leo', timeRange: '17:00-18:30' } },
       { day: 'wednesday', activity: { id: 'demo-6', title: $localize`Homework club`, person: 'mia', timeRange: '17:30-18:30' } },
-      { day: 'thursday', activity: { id: 'demo-7', title: $localize`Swimming`, person: 'mia', timeRange: '16:00-17:00' } },
+      { day: 'thursday', activity: { id: 'demo-7', title: $localize`Swimming`, person: 'mia', timeRange: '16:30-17:30' } },
       { day: 'thursday', activity: { id: 'demo-8', title: $localize`Guitar`, person: 'leo', timeRange: '18:00-18:45' } },
       { day: 'friday', activity: { id: 'demo-9', title: $localize`Football practice`, person: 'leo', timeRange: '17:00-18:30' } },
       { day: 'saturday', activity: { id: 'demo-10', title: $localize`Football match`, person: 'leo', timeRange: '10:00-12:00' } },
