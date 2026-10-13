@@ -10,9 +10,9 @@
     max-width: 1400px;
 }
 
-/* Title and buttons share one row when there is room; otherwise the buttons
-   drop below the title as a block instead of squeezing each label onto
-   several lines. */
+/* The title always has its own centered row, whatever the language's label
+   lengths; the buttons sit centered below it and wrap as a block instead of
+   squeezing each label onto several lines. */
 .header-row {
     display: flex;
     flex-wrap: wrap;
@@ -27,7 +27,7 @@ h1 {
     margin: 0;
     font-size: 36px;
     text-align: center;
-    flex: 1;
+    flex: 1 0 100%;
     white-space: nowrap;
 }
 
