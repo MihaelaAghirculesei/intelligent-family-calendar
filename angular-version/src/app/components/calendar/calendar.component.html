@@ -151,6 +151,17 @@
               [disabled]="!(canRedo$ | async)"
               (click)="onRedo()"
               i18n>↷ Redo</button>
+      <button class="control-btn"
+              (click)="exportData()"
+              i18n>⬇ Export data</button>
+      <button class="control-btn"
+              (click)="importInput.click()"
+              i18n>⬆ Import data</button>
+      <input #importInput
+             type="file"
+             accept="application/json,.json"
+             hidden
+             (change)="onImportFile($event)">
     </div>
 
     <app-add-activity

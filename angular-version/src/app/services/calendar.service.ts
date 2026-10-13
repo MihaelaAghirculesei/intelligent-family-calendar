@@ -5,7 +5,7 @@ import { HistoryService } from './history.service';
 import { PersonService } from './person.service';
 import { TemplateActivity } from '../models/template.model';
 
-type WeekSnapshot = { day: WeekDay; activity: Activity }[];
+export type WeekSnapshot = { day: WeekDay; activity: Activity }[];
 
 @Injectable({
   providedIn: 'root'
@@ -309,6 +309,15 @@ export class CalendarService {
     }
 
     this.notifyChange();
+  }
+
+  getWeek(): WeekSnapshot {
+    return this.snapshotWeek();
+  }
+
+  // Replaces the whole week without recording an undo step, for imports.
+  replaceWeek(snapshot: WeekSnapshot): void {
+    this.restoreWeek(snapshot);
   }
 
   private snapshotWeek(): WeekSnapshot {

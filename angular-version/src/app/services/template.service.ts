@@ -54,6 +54,16 @@ export class TemplateService {
     return [...this.templates];
   }
 
+  replaceAll(templates: WeeklyTemplate[]): void {
+    this.templates = templates.map(t => ({
+      ...t,
+      createdAt: new Date(t.createdAt),
+      updatedAt: new Date(t.updatedAt)
+    }));
+    this.saveTemplates();
+    this.templatesSubject.next([...this.templates]);
+  }
+
   getTemplateById(id: string): WeeklyTemplate | undefined {
     return this.templates.find(t => t.id === id);
   }

@@ -14,6 +14,7 @@ import { ExportPdfOptionsComponent, PdfExportChoice } from '../export-pdf-option
 import { PersonService, PersonData } from '../../services/person.service';
 import { TemplateService } from '../../services/template.service';
 import { PdfExportService, PDF_PRINTABLE_ASPECT_RATIO } from '../../services/pdf-export.service';
+import { BackupService, CalendarBackup, InvalidBackupError } from '../../services/backup.service';
 import { SaveTemplateData, WeeklyTemplate } from '../../models/template.model';
 import { HyphenatePipe } from '../../pipes/hyphenate.pipe';
 
@@ -92,7 +93,8 @@ export class CalendarComponent implements OnInit {
     private historyService: HistoryService,
     private personService: PersonService,
     private templateService: TemplateService,
-    private pdfExportService: PdfExportService
+    private pdfExportService: PdfExportService,
+    private backupService: BackupService
   ) {
     this.rebuildHourMarks();
   }
@@ -430,6 +432,39 @@ export class CalendarComponent implements OnInit {
       dayWidth += (targetWidth - el.offsetWidth) / visibleDays.length;
       el.style.setProperty('--pdf-day-width', `${Math.max(dayWidth, 80)}px`);
     }
+  }
+
+  exportData(): void {
+    const json = JSON.stringify(this.backupService.createBackup(), null, 2);
+    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = $localize`family-calendar-backup` + `-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url));
+  }
+
+  async onImportFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // so choosing the same file again still triggers a change
+    if (!file) return;
+
+    let backup: CalendarBackup;
+    try {
+      backup = this.backupService.parse(await file.text());
+    } catch (error) {
+      if (!(error instanceof InvalidBackupError)) throw error;
+      alert($localize`"${file.name}:fileName:" is not a valid calendar backup. Nothing was changed.`);
+      return;
+    }
+
+    const count = backup.week.length;
+    const confirmed = confirm($localize`Import "${file.name}:fileName:"?\n\nThis replaces the current week (${count}:count: activities), the family members and the templates.`);
+    if (!confirmed) return;
+
+    this.cancelEdit();
+    this.backupService.restore(backup);
   }
 
   showSaveTemplateDialog(): void {

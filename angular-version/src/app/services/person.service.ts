@@ -47,6 +47,12 @@ export class PersonService {
     return newPerson;
   }
 
+  replaceAll(persons: PersonData[]): void {
+    this.persons = persons.map(p => ({ ...p }));
+    this.savePersons();
+    this.updatePersonsSubject();
+  }
+
   removePerson(id: string): boolean {
     const person = this.persons.find(p => p.id === id);
     if (!person || person.isDefault) return false;
