@@ -4,6 +4,7 @@
 ![Angular 22](https://img.shields.io/badge/Angular-22-dd0031?logo=angular)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6?logo=typescript&logoColor=white)
 ![Tests: Vitest](https://img.shields.io/badge/tests-Vitest-6e9f18?logo=vitest&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 A weekly planner for a family with several kids: school, sports and music
 lessons in one color-coded week that fits on a single printed A4 page.
@@ -168,3 +169,7 @@ that changes the app.
   by Vitest; there are no end-to-end tests.
 - **The vanilla prototype** in the root is kept for history and is not
   maintained.
+
+## License
+
+[MIT](LICENSE)
