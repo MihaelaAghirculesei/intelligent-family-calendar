@@ -65,9 +65,9 @@ The family and the schedule in the screenshots are made up.
 
 | Area | Choice |
 | --- | --- |
-| Framework | Angular 22 (standalone components, built-in control flow) |
+| Framework | Angular 22: standalone components, built-in control flow, signals, zoneless change detection, `OnPush` everywhere |
 | Language | TypeScript 6 (strict) |
-| State | Services with RxJS `BehaviorSubject`s, persisted to `localStorage` |
+| State | Signals in services, a `computed` grid layout, persisted to `localStorage` |
 | Drag and drop | Angular CDK |
 | PDF | `html-to-image` + `jsPDF`, lazy-loaded on first export |
 | Hyphenation | `hyphen` (TeX patterns for Italian and English) |
@@ -147,6 +147,13 @@ fully translated build, so there is no translation lookup at runtime. A
 missing Italian translation fails the build, which CI checks on every push
 that changes the app.
 
+**Signals and no zone.js.** The services hold their state in signals, the
+grid layout is a `computed` that only reruns when the week changes, and every
+component is `OnPush`. Without zone.js, Angular refreshes a view only when a
+signal it reads, an event in its template or an input changes, so state that
+changes after an `await` (the PDF export, reading an imported file) lives in
+signals too. Dropping zone.js cut the polyfills from 35 kB to under 1 kB.
+
 ## How it evolved
 
 1. **August 2025: vanilla prototype.** A static HTML table with print styles,
@@ -160,6 +167,9 @@ that changes the app.
    unit tests, upgraded Angular 17 → 22 one major version per commit, moved
    from Karma to Vitest, and added English/Italian i18n with fictitious
    demo data.
+5. **October 2026: signals and zoneless.** Moved the state to signals, made
+   every component `OnPush` and removed zone.js, checking every feature in a
+   real browser along the way.
 
 ## Limitations
 
@@ -172,8 +182,6 @@ that changes the app.
   edit form.
 - **Mouse-first.** The hover details have no touch equivalent yet; on narrow
   screens the grid scrolls horizontally.
-- **Change detection still uses zone.js.** The app predates signals; moving to
-  signals and zoneless change detection is the natural next step.
 - **Unit tests only.** Services, layout logic, shortcuts and pipes are covered
   by Vitest; there are no end-to-end tests.
 - **The vanilla prototype** in the root is kept for history and is not
