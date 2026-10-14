@@ -53,6 +53,20 @@ describe('CalendarService', () => {
     expect(idsOn('friday')).toEqual(['a']);
   });
 
+  it('moves an activity to another time and undoes day and time together', () => {
+    calendar.addActivity(activity('a', '10:00-11:00'), 'monday');
+
+    calendar.moveActivity('a', 'monday', 'tuesday', '14:30-15:30');
+    expect(calendar.getCell('tuesday')!.activities[0].timeRange).toBe('14:30-15:30');
+
+    history.undo();
+    expect(idsOn('monday')).toEqual(['a']);
+    expect(calendar.getCell('monday')!.activities[0].timeRange).toBe('10:00-11:00');
+
+    history.redo();
+    expect(calendar.getCell('tuesday')!.activities[0].timeRange).toBe('14:30-15:30');
+  });
+
   it('undoes an add and a delete', () => {
     calendar.addActivity(activity('a'), 'tuesday');
     history.undo();

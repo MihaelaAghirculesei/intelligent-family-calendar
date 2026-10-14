@@ -49,6 +49,7 @@
                  [id]="day"
                  [cdkDropListData]="getCell(calendarData, day)?.activities || []"
                  [cdkDropListConnectedTo]="connectedDropLists"
+                 cdkDropListSortingDisabled
                  (cdkDropListDropped)="onDrop($event, day)">
 
               @for (block of dayBlocks[day]; track block.activity.id) {
@@ -60,8 +61,10 @@
                      (dblclick)="startEdit(block.activity)"
                      (pointerenter)="onBlockPointerEnter($event, block.activity)"
                      (pointerleave)="onBlockPointerLeave($event)"
+                     (pointerdown)="onBlockPointerDown($event)"
                      (pointerup)="onBlockPointerUp($event, block.activity)"
                      (cdkDragStarted)="onDragStarted()"
+                     (cdkDragEnded)="onDragEnded()"
                      [class.editing]="editingActivityId() === block.activity.id">
 
                   @if (editingActivityId() === block.activity.id) {

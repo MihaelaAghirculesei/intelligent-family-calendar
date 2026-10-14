@@ -30,7 +30,7 @@ export class CalendarService {
 
   private handleUndo(action: any): void {
     if (action.type === 'move' && action.originalPosition && action.newPosition) {
-      this.moveActivityDirect(action.activityId, action.newPosition.day, action.originalPosition.day);
+      this.moveActivityDirect(action.activityId, action.newPosition.day, action.originalPosition.day, action.originalData);
     } else if (action.type === 'add' && action.newPosition) {
       this.removeActivityDirect(action.activityId, action.newPosition.day);
     } else if (action.type === 'edit' && action.originalData) {
@@ -44,7 +44,7 @@ export class CalendarService {
 
   private handleRedo(action: any): void {
     if (action.type === 'move' && action.originalPosition && action.newPosition) {
-      this.moveActivityDirect(action.activityId, action.originalPosition.day, action.newPosition.day);
+      this.moveActivityDirect(action.activityId, action.originalPosition.day, action.newPosition.day, action.newData);
     } else if (action.type === 'add' && action.newPosition && action.originalData) {
       this.addActivityDirect(action.originalData, action.newPosition.day);
     } else if (action.type === 'edit' && action.newData) {
@@ -99,7 +99,9 @@ export class CalendarService {
     this.restoreWeek([...school, ...demoWeek]);
   }
 
-  moveActivity(activityId: string, fromDay: WeekDay, toDay: WeekDay): boolean {
+  // Moves an activity to another day and, when a time range is given, to
+  // another time as well; undo restores both in one step.
+  moveActivity(activityId: string, fromDay: WeekDay, toDay: WeekDay, timeRange?: string): boolean {
     const fromCell = this.calendarData.cells.get(fromDay);
     const toCell = this.calendarData.cells.get(toDay);
 
@@ -108,16 +110,22 @@ export class CalendarService {
     const activityIndex = fromCell.activities.findIndex(a => a.id === activityId);
     if (activityIndex === -1) return false;
 
+    const activity = fromCell.activities[activityIndex];
     if (this.historyService) {
       this.historyService.addAction({
         type: 'move',
         activityId,
         originalPosition: { day: fromDay },
-        newPosition: { day: toDay }
+        newPosition: { day: toDay },
+        originalData: { timeRange: activity.timeRange },
+        newData: { timeRange: timeRange ?? activity.timeRange }
       });
     }
 
-    const activity = fromCell.activities.splice(activityIndex, 1)[0];
+    fromCell.activities.splice(activityIndex, 1);
+    if (timeRange !== undefined) {
+      activity.timeRange = timeRange;
+    }
     toCell.activities.push(activity);
 
     this.notifyChange();
@@ -168,7 +176,8 @@ export class CalendarService {
     return true;
   }
 
-  moveActivityDirect(activityId: string, fromDay: WeekDay, toDay: WeekDay): boolean {
+  // Moves recorded before moves could change the time carry no time data.
+  moveActivityDirect(activityId: string, fromDay: WeekDay, toDay: WeekDay, time?: { timeRange?: string }): boolean {
     const fromCell = this.calendarData.cells.get(fromDay);
     const toCell = this.calendarData.cells.get(toDay);
 
@@ -178,6 +187,9 @@ export class CalendarService {
     if (activityIndex === -1) return false;
 
     const activity = fromCell.activities.splice(activityIndex, 1)[0];
+    if (time) {
+      activity.timeRange = time.timeRange;
+    }
     toCell.activities.push(activity);
 
     this.notifyChange();

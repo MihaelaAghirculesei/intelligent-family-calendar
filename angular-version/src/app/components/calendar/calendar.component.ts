@@ -73,6 +73,10 @@ export class CalendarComponent implements OnInit {
   readonly isExportingPdf = signal(false);
   readonly activityDetails = signal<ActivityDetails | null>(null);
   private tapEndsDrag = false;
+  private dragging = false;
+  // Where in the block the pointer grabbed it, so a drop keeps the block's
+  // top edge (not the pointer) as the new start time.
+  private grabOffsetY = 0;
 
   readonly editingActivityId = signal<string | null>(null);
   editForm: {
@@ -125,7 +129,7 @@ export class CalendarComponent implements OnInit {
   // its full details: on hover with a mouse, on tap with touch or a pen,
   // which have no hover.
   onBlockPointerEnter(event: PointerEvent, activity: Activity): void {
-    if (event.pointerType === 'mouse') {
+    if (event.pointerType === 'mouse' && !this.dragging) {
       this.showDetails(event.currentTarget as HTMLElement, activity);
     }
   }
@@ -146,9 +150,18 @@ export class CalendarComponent implements OnInit {
     }
   }
 
+  onBlockPointerDown(event: PointerEvent): void {
+    this.grabOffsetY = event.clientY - (event.currentTarget as HTMLElement).getBoundingClientRect().top;
+  }
+
   onDragStarted(): void {
     this.tapEndsDrag = true;
+    this.dragging = true;
     this.hideDetails();
+  }
+
+  onDragEnded(): void {
+    this.dragging = false;
   }
 
   // A tap outside the blocks closes the card; any press also starts a fresh
@@ -330,11 +343,30 @@ export class CalendarComponent implements OnInit {
   }
 
   onDrop(event: CdkDragDrop<Activity[]>, day: WeekDay): void {
-    if (event.previousContainer === event.container) return;
+    if (!event.isPointerOverContainer) return;
 
     const activity: Activity = event.item.data;
     const fromDay = event.previousContainer.id as WeekDay;
-    this.calendarService.moveActivity(activity.id, fromDay, day);
+    const timeRange = this.timeRangeAtDrop(activity, event.container.element.nativeElement, event.dropPoint.y);
+    if (fromDay === day && timeRange === activity.timeRange) return;
+
+    this.calendarService.moveActivity(activity.id, fromDay, day, timeRange);
+  }
+
+  // Keeps the duration and starts the activity where its block was dropped,
+  // in steps of 15 minutes and within the day.
+  private timeRangeAtDrop(activity: Activity, column: HTMLElement, pointerY: number): string | undefined {
+    const parsed = this.parseTimeRange(activity.timeRange);
+    if (!parsed) return activity.timeRange;
+
+    const step = 15;
+    const duration = parsed.end - parsed.start;
+    const top = pointerY - this.grabOffsetY - column.getBoundingClientRect().top;
+    const minutes = this.gridStartHour * 60 + top / this.pxPerMinute;
+    const start = Math.min(Math.max(Math.round(minutes / step) * step, 0), 24 * 60 - duration);
+
+    const format = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    return `${format(start)}-${format(start + duration)}`;
   }
 
   // Ctrl/Cmd+Z undoes, Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z redoes. Ignored while
