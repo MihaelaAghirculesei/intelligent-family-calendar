@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy, LOCALE_ID, inject } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy, LOCALE_ID, inject } from '@angular/core';
 
 import { TemplateService } from '../../services/template.service';
 import { WeeklyTemplate } from '../../models/template.model';
@@ -10,22 +10,16 @@ import { WeeklyTemplate } from '../../models/template.model';
   styleUrl: './template-list.component.css',
   changeDetection: ChangeDetectionStrategy.Eager
 })
-export class TemplateListComponent implements OnInit {
+export class TemplateListComponent {
   @Output() templateDeleted = new EventEmitter<string>();
   @Output() templateApplied = new EventEmitter<WeeklyTemplate>();
   @Output() cancelled = new EventEmitter<void>();
 
-  templates: WeeklyTemplate[] = [];
+  readonly templates = this.templateService.allTemplates;
   isVisible = false;
   private readonly locale = inject(LOCALE_ID);
 
   constructor(private templateService: TemplateService) {}
-
-  ngOnInit(): void {
-    this.templateService.templates$.subscribe(templates => {
-      this.templates = templates;
-    });
-  }
 
   show(): void {
     this.isVisible = true;
@@ -45,7 +39,7 @@ export class TemplateListComponent implements OnInit {
   }
 
   deleteTemplate(templateId: string): void {
-    const template = this.templates.find(t => t.id === templateId);
+    const template = this.templates().find(t => t.id === templateId);
     if (!template) return;
 
     const confirmed = confirm($localize`Are you sure you want to delete the template "${template.name}:name:"?\n\nThis cannot be undone.`);

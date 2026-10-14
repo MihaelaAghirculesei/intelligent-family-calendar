@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 import { Activity, CalendarData, CalendarCell, WeekDay } from '../models/activity.model';
 import { HistoryService } from './history.service';
 import { PersonService } from './person.service';
@@ -12,7 +11,7 @@ export type WeekSnapshot = { day: WeekDay; activity: Activity }[];
 })
 export class CalendarService {
   private calendarData: CalendarData;
-  private calendarSubject = new BehaviorSubject<CalendarData>(this.initializeCalendar());
+  private readonly calendarState = signal<CalendarData>(this.initializeCalendar());
 
   private historyService?: HistoryService;
 
@@ -58,9 +57,9 @@ export class CalendarService {
     }
   }
 
-  get calendar$(): Observable<CalendarData> {
-    return this.calendarSubject.asObservable();
-  }
+  // The week is updated in place, so every change publishes a new wrapper
+  // object; that is what tells the signal's readers something changed.
+  readonly calendar = this.calendarState.asReadonly();
 
   private initializeCalendar(): CalendarData {
     const weekDays: WeekDay[] = [
@@ -403,7 +402,7 @@ export class CalendarService {
   }
 
   private notifyChange(): void {
-    this.calendarSubject.next(this.calendarData);
+    this.calendarState.set({ ...this.calendarData });
     this.saveCalendarData();
   }
 }

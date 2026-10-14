@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 import { WeeklyTemplate, TemplateActivity, SaveTemplateData } from '../models/template.model';
 import { CalendarData, Activity, WeekDay } from '../models/activity.model';
 
@@ -8,14 +7,12 @@ import { CalendarData, Activity, WeekDay } from '../models/activity.model';
 })
 export class TemplateService {
   private templates: WeeklyTemplate[] = [];
-  private templatesSubject = new BehaviorSubject<WeeklyTemplate[]>([]);
+  private readonly templatesState = signal<WeeklyTemplate[]>([]);
+
+  readonly allTemplates = this.templatesState.asReadonly();
 
   constructor() {
     this.loadTemplates();
-  }
-
-  get templates$(): Observable<WeeklyTemplate[]> {
-    return this.templatesSubject.asObservable();
   }
 
   saveCurrentWeekAsTemplate(calendarData: CalendarData, templateData: SaveTemplateData): WeeklyTemplate {
@@ -45,7 +42,7 @@ export class TemplateService {
 
     this.templates.push(newTemplate);
     this.saveTemplates();
-    this.templatesSubject.next([...this.templates]);
+    this.templatesState.set([...this.templates]);
 
     return newTemplate;
   }
@@ -61,7 +58,7 @@ export class TemplateService {
       updatedAt: new Date(t.updatedAt)
     }));
     this.saveTemplates();
-    this.templatesSubject.next([...this.templates]);
+    this.templatesState.set([...this.templates]);
   }
 
   getTemplateById(id: string): WeeklyTemplate | undefined {
@@ -74,7 +71,7 @@ export class TemplateService {
 
     this.templates.splice(index, 1);
     this.saveTemplates();
-    this.templatesSubject.next([...this.templates]);
+    this.templatesState.set([...this.templates]);
     return true;
   }
 
@@ -84,7 +81,7 @@ export class TemplateService {
 
     Object.assign(template, updates, { updatedAt: new Date() });
     this.saveTemplates();
-    this.templatesSubject.next([...this.templates]);
+    this.templatesState.set([...this.templates]);
     return true;
   }
 
@@ -109,7 +106,7 @@ export class TemplateService {
             createdAt: new Date(t.createdAt),
             updatedAt: new Date(t.updatedAt)
           }));
-          this.templatesSubject.next([...this.templates]);
+          this.templatesState.set([...this.templates]);
         } catch (e) {
           console.error('Failed to load templates:', e);
         }

@@ -1,11 +1,11 @@
-@if (calendarData$ | async; as calendarData) {
+@if (calendarData(); as calendarData) {
   <div class="container">
     <div class="header-row">
       <h1 i18n>Family Weekly Schedule</h1>
       <div class="header-buttons">
         <button class="add-btn" (click)="showAddActivityForm()" i18n>➕ Add activity</button>
         <button class="template-btn" (click)="showSaveTemplateDialog()" i18n>💾 Save template</button>
-        <button class="template-list-btn" (click)="showTemplateListDialog()" i18n>📋 Templates ({{ templateCount }})</button>
+        <button class="template-list-btn" (click)="showTemplateListDialog()" i18n>📋 Templates ({{ templateCount() }})</button>
         <button class="export-btn" [disabled]="isExportingPdf" (click)="showExportPdfDialog()">
           @if (isExportingPdf) {
             <ng-container i18n>⏳ Exporting...</ng-container>
@@ -18,7 +18,7 @@
 
     <div #printArea>
       <div class="legend">
-        @for (person of persons; track person.id) {
+        @for (person of persons(); track person.id) {
           <div class="legend-item" [style.background-color]="person.color">
             {{ person.name }}
           </div>
@@ -80,7 +80,7 @@
                              (keyup.escape)="cancelEdit()">
                       <div class="person-selector">
                         <select [(ngModel)]="editForm.person" class="edit-select">
-                          @for (person of persons; track person.id) {
+                          @for (person of persons(); track person.id) {
                             <option [value]="person.id">{{ person.name }}</option>
                           }
                         </select>
@@ -94,12 +94,12 @@
                       </div>
                       <div class="edit-buttons">
                         <button (click)="onUndo()"
-                                [disabled]="!(canUndo$ | async)"
+                                [disabled]="!canUndo()"
                                 class="undo-btn"
                                 title="Undo"
                                 i18n-title>↶</button>
                         <button (click)="onRedo()"
-                                [disabled]="!(canRedo$ | async)"
+                                [disabled]="!canRedo()"
                                 class="redo-btn"
                                 title="Redo"
                                 i18n-title>↷</button>
@@ -144,11 +144,11 @@
 
     <div class="bottom-controls">
       <button class="control-btn"
-              [disabled]="!(canUndo$ | async)"
+              [disabled]="!canUndo()"
               (click)="onUndo()"
               i18n>↶ Undo</button>
       <button class="control-btn"
-              [disabled]="!(canRedo$ | async)"
+              [disabled]="!canRedo()"
               (click)="onRedo()"
               i18n>↷ Redo</button>
       <button class="control-btn"

@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 import { HistoryAction, HistoryState } from '../models/history.model';
 
 @Injectable({
@@ -12,20 +11,13 @@ export class HistoryService {
     maxHistorySize: 50
   };
 
-  private canUndoSubject = new BehaviorSubject<boolean>(false);
-  private canRedoSubject = new BehaviorSubject<boolean>(false);
+  private readonly canUndoState = signal(false);
+  private readonly canRedoState = signal(false);
   private undoCallback: ((action: HistoryAction) => void) | null = null;
   private redoCallback: ((action: HistoryAction) => void) | null = null;
 
-  constructor() {}
-
-  get canUndo$(): Observable<boolean> {
-    return this.canUndoSubject.asObservable();
-  }
-
-  get canRedo$(): Observable<boolean> {
-    return this.canRedoSubject.asObservable();
-  }
+  readonly canUndo = this.canUndoState.asReadonly();
+  readonly canRedo = this.canRedoState.asReadonly();
 
   addAction(action: Omit<HistoryAction, 'timestamp'>): void {
     this.historyState.actions = this.historyState.actions.slice(0, this.historyState.currentIndex + 1);
@@ -79,14 +71,6 @@ export class HistoryService {
     return true;
   }
 
-  canUndo(): boolean {
-    return this.historyState.currentIndex >= 0;
-  }
-
-  canRedo(): boolean {
-    return this.historyState.currentIndex < this.historyState.actions.length - 1;
-  }
-
   clear(): void {
     this.historyState = {
       actions: [],
@@ -97,8 +81,8 @@ export class HistoryService {
   }
 
   private updateButtonStates(): void {
-    this.canUndoSubject.next(this.canUndo());
-    this.canRedoSubject.next(this.canRedo());
+    this.canUndoState.set(this.historyState.currentIndex >= 0);
+    this.canRedoState.set(this.historyState.currentIndex < this.historyState.actions.length - 1);
   }
 
   getHistorySize(): number {

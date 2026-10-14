@@ -1,7 +1,6 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectionStrategy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { CalendarService } from '../../services/calendar.service';
 import { HistoryService } from '../../services/history.service';
@@ -35,6 +34,14 @@ interface ActivityBlock {
   };
 }
 
+interface GridLayout {
+  startHour: number;
+  endHour: number;
+  heightPx: number;
+  hourMarks: number[];
+  dayBlocks: Record<WeekDay, ActivityBlock[]>;
+}
+
 @Component({
   selector: 'app-calendar',
   imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent, TemplateListComponent, ExportPdfOptionsComponent, HyphenatePipe],
@@ -50,12 +57,12 @@ export class CalendarComponent implements OnInit {
   @ViewChild('exportPdfOptionsComponent') exportPdfOptionsComponent!: ExportPdfOptionsComponent;
   @ViewChild('printArea') printArea!: ElementRef<HTMLElement>;
 
-  calendarData$!: Observable<CalendarData>;
-  canUndo$!: Observable<boolean>;
-  canRedo$!: Observable<boolean>;
+  readonly calendarData = this.calendarService.calendar;
+  readonly canUndo = this.historyService.canUndo;
+  readonly canRedo = this.historyService.canRedo;
+  readonly persons = this.personService.allPersons;
+  readonly templateCount = computed(() => this.templateService.allTemplates().length);
   connectedDropLists: string[] = [];
-  persons: PersonData[] = [];
-  templateCount = 0;
   isExportingPdf = false;
   activityDetails: ActivityDetails | null = null;
 
@@ -79,14 +86,15 @@ export class CalendarComponent implements OnInit {
   private readonly defaultStartHour = 7;
   private readonly defaultEndHour = 22;
   readonly pxPerMinute = 1; // 60px per hour
-  gridStartHour = this.defaultStartHour;
-  gridEndHour = this.defaultEndHour;
-  gridHeightPx = (this.gridEndHour - this.gridStartHour) * 60 * this.pxPerMinute;
-  hourMarks: number[] = [];
 
-  dayBlocks: Record<WeekDay, ActivityBlock[]> = {
-    monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: []
-  };
+  // Recomputed only when the week changes.
+  private readonly layout = computed(() => this.computeLayout(this.calendarData()));
+
+  get gridStartHour(): number { return this.layout().startHour; }
+  get gridEndHour(): number { return this.layout().endHour; }
+  get gridHeightPx(): number { return this.layout().heightPx; }
+  get hourMarks(): number[] { return this.layout().hourMarks; }
+  get dayBlocks(): Record<WeekDay, ActivityBlock[]> { return this.layout().dayBlocks; }
 
   constructor(
     private calendarService: CalendarService,
@@ -95,37 +103,11 @@ export class CalendarComponent implements OnInit {
     private templateService: TemplateService,
     private pdfExportService: PdfExportService,
     private backupService: BackupService
-  ) {
-    this.rebuildHourMarks();
-  }
-
-  private rebuildHourMarks(): void {
-    this.hourMarks = [];
-    for (let h = this.gridStartHour; h <= this.gridEndHour; h++) {
-      this.hourMarks.push(h);
-    }
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.calendarData$ = this.calendarService.calendar$;
-    this.canUndo$ = this.historyService.canUndo$;
-    this.canRedo$ = this.historyService.canRedo$;
-
     this.calendarService.setHistoryService(this.historyService);
-
-    this.personService.persons$.subscribe(persons => {
-      this.persons = persons;
-    });
-
-    this.templateService.templates$.subscribe(templates => {
-      this.templateCount = templates.length;
-    });
-
     this.connectedDropLists = [...this.weekDays];
-
-    this.calendarData$.subscribe(calendarData => {
-      this.recomputeLayout(calendarData);
-    });
   }
 
   getCell(calendarData: CalendarData, day: WeekDay) {
@@ -184,7 +166,7 @@ export class CalendarComponent implements OnInit {
     return { start, end };
   }
 
-  private recomputeLayout(calendarData: CalendarData): void {
+  private computeLayout(calendarData: CalendarData): GridLayout {
     // Widen the grid to fit any activity outside the default 7:00-22:00
     // window (e.g. an early-morning or late-evening appointment), so it
     // never ends up clipped by the grid's rounded-corner overflow:hidden.
@@ -200,13 +182,16 @@ export class CalendarComponent implements OnInit {
       });
     });
 
-    this.gridStartHour = Math.floor(minStart / 60);
-    this.gridEndHour = Math.ceil(maxEnd / 60);
-    this.gridHeightPx = (this.gridEndHour - this.gridStartHour) * 60 * this.pxPerMinute;
-    this.rebuildHourMarks();
+    const startHour = Math.floor(minStart / 60);
+    const endHour = Math.ceil(maxEnd / 60);
+    const hourMarks: number[] = [];
+    for (let h = startHour; h <= endHour; h++) {
+      hourMarks.push(h);
+    }
 
-    const gridStart = this.gridStartHour * 60;
-    const gridEnd = this.gridEndHour * 60;
+    const gridStart = startHour * 60;
+    const gridEnd = endHour * 60;
+    const dayBlocks = {} as Record<WeekDay, ActivityBlock[]>;
 
     this.weekDays.forEach(day => {
       const activities = calendarData.cells.get(day)?.activities || [];
@@ -284,8 +269,16 @@ export class CalendarComponent implements OnInit {
       });
       flushCluster();
 
-      this.dayBlocks[day] = blocks;
+      dayBlocks[day] = blocks;
     });
+
+    return {
+      startHour,
+      endHour,
+      heightPx: (endHour - startHour) * 60 * this.pxPerMinute,
+      hourMarks,
+      dayBlocks
+    };
   }
 
   onDrop(event: CdkDragDrop<Activity[]>, day: WeekDay): void {
@@ -356,7 +349,7 @@ export class CalendarComponent implements OnInit {
 
   cancelEdit(): void {
     this.editingActivityId = null;
-    const firstPerson = this.persons.length > 0 ? this.persons[0].id : '';
+    const firstPerson = this.persons()[0]?.id ?? '';
     this.editForm = { title: '', timeRange: '', person: firstPerson };
   }
 
@@ -472,11 +465,9 @@ export class CalendarComponent implements OnInit {
   }
 
   onTemplateSaved(templateData: SaveTemplateData): void {
-    this.calendarService.calendar$.subscribe(calendarData => {
-      const savedTemplate = this.templateService.saveCurrentWeekAsTemplate(calendarData, templateData);
-      const { name, activities } = savedTemplate;
-      alert($localize`Template "${name}:name:" saved! 💾\n\nActivities saved: ${activities.length}:count:`);
-    }).unsubscribe();
+    const savedTemplate = this.templateService.saveCurrentWeekAsTemplate(this.calendarData(), templateData);
+    const { name, activities } = savedTemplate;
+    alert($localize`Template "${name}:name:" saved! 💾\n\nActivities saved: ${activities.length}:count:`);
   }
 
   showTemplateListDialog(): void {

@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 
 export interface PersonData {
   id: string;
@@ -23,11 +22,9 @@ export class PersonService {
   ];
 
   private persons: PersonData[] = this.loadPersons();
-  private personsSubject = new BehaviorSubject<PersonData[]>(this.getAllPersons());
+  private readonly personsState = signal<PersonData[]>(this.getAllPersons());
 
-  get persons$(): Observable<PersonData[]> {
-    return this.personsSubject.asObservable();
-  }
+  readonly allPersons = this.personsState.asReadonly();
 
   getAllPersons(): PersonData[] {
     return [...this.persons];
@@ -86,7 +83,7 @@ export class PersonService {
   }
 
   private updatePersonsSubject(): void {
-    this.personsSubject.next(this.getAllPersons());
+    this.personsState.set(this.getAllPersons());
   }
 
   private savePersons(): void {

@@ -63,13 +63,12 @@ describe('HistoryService', () => {
     expect(undone[undone.length - 1].activityId).toBe('a10');
   });
 
-  it('publishes button state changes', () => {
-    const states: boolean[] = [];
-    history.canUndo$.subscribe(v => states.push(v));
-
+  it('exposes whether undo and redo are available as signals', () => {
     history.addAction(move('a'));
-    history.undo();
+    expect(history.canUndo()).toBe(true);
 
-    expect(states).toEqual([false, true, false]);
+    history.undo();
+    expect(history.canUndo()).toBe(false);
+    expect(history.canRedo()).toBe(true);
   });
 });

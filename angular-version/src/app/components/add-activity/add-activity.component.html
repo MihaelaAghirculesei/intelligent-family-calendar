@@ -31,7 +31,7 @@
             (change)="onPersonChange($event)"
             [class.error]="activityForm.get('person')?.invalid && activityForm.get('person')?.touched">
             <option value="" i18n>Select a person</option>
-            @for (person of persons; track person.id) {
+            @for (person of persons(); track person.id) {
               <option [value]="person.id">
                 {{ person.name }}
               </option>

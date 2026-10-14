@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ViewChild, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Activity, WeekDay } from '../../models/activity.model';
@@ -12,14 +12,14 @@ import { AddPersonComponent } from '../add-person/add-person.component';
   styleUrl: './add-activity.component.css',
   changeDetection: ChangeDetectionStrategy.Eager
 })
-export class AddActivityComponent implements OnInit {
+export class AddActivityComponent {
   @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
   @Output() activityAdded = new EventEmitter<{activity: Activity, day: WeekDay}>();
   @Output() cancelled = new EventEmitter<void>();
 
   activityForm: FormGroup;
   isVisible = false;
-  persons: PersonData[] = [];
+  readonly persons = this.personService.allPersons;
 
   weekDays: {value: WeekDay, label: string}[] = [
     { value: 'monday', label: $localize`Monday` },
@@ -38,12 +38,6 @@ export class AddActivityComponent implements OnInit {
       day: ['', Validators.required],
       startTime: ['', [Validators.required, Validators.pattern(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)]],
       endTime: ['', [Validators.required, Validators.pattern(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)]]
-    });
-  }
-
-  ngOnInit(): void {
-    this.personService.persons$.subscribe(persons => {
-      this.persons = persons;
     });
   }
 
