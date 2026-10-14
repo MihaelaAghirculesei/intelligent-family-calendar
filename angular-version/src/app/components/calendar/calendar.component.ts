@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ChangeDetectionStrategy, computed, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -50,12 +50,19 @@ interface GridLayout {
   changeDetection: ChangeDetectionStrategy.Eager
 })
 export class CalendarComponent implements OnInit {
-  @ViewChild('addActivityComponent') addActivityComponent!: AddActivityComponent;
-  @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
-  @ViewChild('saveTemplateComponent') saveTemplateComponent!: SaveTemplateComponent;
-  @ViewChild('templateListComponent') templateListComponent!: TemplateListComponent;
-  @ViewChild('exportPdfOptionsComponent') exportPdfOptionsComponent!: ExportPdfOptionsComponent;
-  @ViewChild('printArea') printArea!: ElementRef<HTMLElement>;
+  private readonly calendarService = inject(CalendarService);
+  private readonly historyService = inject(HistoryService);
+  private readonly personService = inject(PersonService);
+  private readonly templateService = inject(TemplateService);
+  private readonly pdfExportService = inject(PdfExportService);
+  private readonly backupService = inject(BackupService);
+
+  readonly addActivityComponent = viewChild.required<AddActivityComponent>('addActivityComponent');
+  readonly addPersonComponent = viewChild.required<AddPersonComponent>('addPersonComponent');
+  readonly saveTemplateComponent = viewChild.required<SaveTemplateComponent>('saveTemplateComponent');
+  readonly templateListComponent = viewChild.required<TemplateListComponent>('templateListComponent');
+  readonly exportPdfOptionsComponent = viewChild.required<ExportPdfOptionsComponent>('exportPdfOptionsComponent');
+  readonly printArea = viewChild.required<ElementRef<HTMLElement>>('printArea');
 
   readonly calendarData = this.calendarService.calendar;
   readonly canUndo = this.historyService.canUndo;
@@ -95,15 +102,6 @@ export class CalendarComponent implements OnInit {
   get gridHeightPx(): number { return this.layout().heightPx; }
   get hourMarks(): number[] { return this.layout().hourMarks; }
   get dayBlocks(): Record<WeekDay, ActivityBlock[]> { return this.layout().dayBlocks; }
-
-  constructor(
-    private calendarService: CalendarService,
-    private historyService: HistoryService,
-    private personService: PersonService,
-    private templateService: TemplateService,
-    private pdfExportService: PdfExportService,
-    private backupService: BackupService
-  ) {}
 
   ngOnInit(): void {
     this.calendarService.setHistoryService(this.historyService);
@@ -317,7 +315,7 @@ export class CalendarComponent implements OnInit {
   }
 
   showAddActivityForm(): void {
-    this.addActivityComponent.show();
+    this.addActivityComponent().show();
   }
 
   onActivityAdded(event: {activity: Activity, day: WeekDay}): void {
@@ -354,7 +352,7 @@ export class CalendarComponent implements OnInit {
   }
 
   showAddPersonForm(): void {
-    this.addPersonComponent.show();
+    this.addPersonComponent().show();
   }
 
   onPersonAdded(personData: PersonData): void {
@@ -373,14 +371,14 @@ export class CalendarComponent implements OnInit {
   }
 
   showExportPdfDialog(): void {
-    this.exportPdfOptionsComponent.show();
+    this.exportPdfOptionsComponent().show();
   }
 
   async onExportPdfConfirmed(choice: PdfExportChoice): Promise<void> {
     if (this.isExportingPdf) return;
 
     this.isExportingPdf = true;
-    const el = this.printArea.nativeElement;
+    const el = this.printArea().nativeElement;
 
     // Fix each day column to a set pixel width during export (instead of the
     // on-screen flex:1 stretch) so hiding the weekend actually narrows the
@@ -461,7 +459,7 @@ export class CalendarComponent implements OnInit {
   }
 
   showSaveTemplateDialog(): void {
-    this.saveTemplateComponent.show();
+    this.saveTemplateComponent().show();
   }
 
   onTemplateSaved(templateData: SaveTemplateData): void {
@@ -471,7 +469,7 @@ export class CalendarComponent implements OnInit {
   }
 
   showTemplateListDialog(): void {
-    this.templateListComponent.show();
+    this.templateListComponent().show();
   }
 
   onTemplateApplied(template: WeeklyTemplate): void {

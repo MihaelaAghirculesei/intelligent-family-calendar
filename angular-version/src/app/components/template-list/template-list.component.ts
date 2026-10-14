@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy, LOCALE_ID, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, LOCALE_ID, inject, output } from '@angular/core';
 
 import { TemplateService } from '../../services/template.service';
 import { WeeklyTemplate } from '../../models/template.model';
@@ -11,15 +11,15 @@ import { WeeklyTemplate } from '../../models/template.model';
   changeDetection: ChangeDetectionStrategy.Eager
 })
 export class TemplateListComponent {
-  @Output() templateDeleted = new EventEmitter<string>();
-  @Output() templateApplied = new EventEmitter<WeeklyTemplate>();
-  @Output() cancelled = new EventEmitter<void>();
+  private readonly templateService = inject(TemplateService);
+
+  readonly templateDeleted = output<string>();
+  readonly templateApplied = output<WeeklyTemplate>();
+  readonly cancelled = output<void>();
 
   readonly templates = this.templateService.allTemplates;
   isVisible = false;
   private readonly locale = inject(LOCALE_ID);
-
-  constructor(private templateService: TemplateService) {}
 
   show(): void {
     this.isVisible = true;

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Activity, WeekDay } from '../models/activity.model';
 import { WeeklyTemplate } from '../models/template.model';
 import { CalendarService, WeekSnapshot } from './calendar.service';
@@ -27,12 +27,10 @@ export class InvalidBackupError extends Error {}
   providedIn: 'root'
 })
 export class BackupService {
-  constructor(
-    private calendarService: CalendarService,
-    private personService: PersonService,
-    private templateService: TemplateService,
-    private historyService: HistoryService
-  ) {}
+  private readonly calendarService = inject(CalendarService);
+  private readonly personService = inject(PersonService);
+  private readonly templateService = inject(TemplateService);
+  private readonly historyService = inject(HistoryService);
 
   createBackup(): CalendarBackup {
     return {

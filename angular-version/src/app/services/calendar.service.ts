@@ -1,7 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Activity, CalendarData, CalendarCell, WeekDay } from '../models/activity.model';
 import { HistoryService } from './history.service';
-import { PersonService } from './person.service';
 import { TemplateActivity } from '../models/template.model';
 
 export type WeekSnapshot = { day: WeekDay; activity: Activity }[];
@@ -15,7 +14,7 @@ export class CalendarService {
 
   private historyService?: HistoryService;
 
-  constructor(private personService: PersonService) {
+  constructor() {
     this.calendarData = this.initializeCalendar();
     this.loadCalendarData();
   }

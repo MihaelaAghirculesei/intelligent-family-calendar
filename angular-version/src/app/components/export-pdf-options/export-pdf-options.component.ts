@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
@@ -14,8 +14,8 @@ export interface PdfExportChoice {
   changeDetection: ChangeDetectionStrategy.Eager
 })
 export class ExportPdfOptionsComponent {
-  @Output() exportConfirmed = new EventEmitter<PdfExportChoice>();
-  @Output() cancelled = new EventEmitter<void>();
+  readonly exportConfirmed = output<PdfExportChoice>();
+  readonly cancelled = output<void>();
 
   isVisible = false;
   includeWeekend = true;

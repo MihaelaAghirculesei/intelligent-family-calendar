@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PersonData } from '../../services/person.service';
@@ -11,8 +11,10 @@ import { PersonData } from '../../services/person.service';
   changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AddPersonComponent {
-  @Output() personAdded = new EventEmitter<PersonData>();
-  @Output() cancelled = new EventEmitter<void>();
+  private readonly fb = inject(FormBuilder);
+
+  readonly personAdded = output<PersonData>();
+  readonly cancelled = output<void>();
 
   personForm: FormGroup;
   isVisible = false;
@@ -71,7 +73,7 @@ export class AddPersonComponent {
     '#B0BEC5', '#90A4AE', '#64748B', '#475569', '#334155'
   ];
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.personForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
       color: ['#2196F3', Validators.required]

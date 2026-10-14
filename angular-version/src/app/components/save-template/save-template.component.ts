@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SaveTemplateData } from '../../models/template.model';
@@ -11,13 +11,15 @@ import { SaveTemplateData } from '../../models/template.model';
   changeDetection: ChangeDetectionStrategy.Eager
 })
 export class SaveTemplateComponent {
-  @Output() templateSaved = new EventEmitter<SaveTemplateData>();
-  @Output() cancelled = new EventEmitter<void>();
+  private readonly fb = inject(FormBuilder);
+
+  readonly templateSaved = output<SaveTemplateData>();
+  readonly cancelled = output<void>();
 
   templateForm: FormGroup;
   isVisible = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.templateForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       description: ['', [Validators.maxLength(200)]]

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output, viewChild } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Activity, WeekDay } from '../../models/activity.model';
@@ -13,9 +13,12 @@ import { AddPersonComponent } from '../add-person/add-person.component';
   changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AddActivityComponent {
-  @ViewChild('addPersonComponent') addPersonComponent!: AddPersonComponent;
-  @Output() activityAdded = new EventEmitter<{activity: Activity, day: WeekDay}>();
-  @Output() cancelled = new EventEmitter<void>();
+  private readonly fb = inject(FormBuilder);
+  private readonly personService = inject(PersonService);
+
+  readonly addPersonComponent = viewChild.required<AddPersonComponent>('addPersonComponent');
+  readonly activityAdded = output<{activity: Activity, day: WeekDay}>();
+  readonly cancelled = output<void>();
 
   activityForm: FormGroup;
   isVisible = false;
@@ -31,7 +34,7 @@ export class AddActivityComponent {
     { value: 'sunday', label: $localize`Sunday` }
   ];
 
-  constructor(private fb: FormBuilder, private personService: PersonService) {
+  constructor() {
     this.activityForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(2)]],
       person: ['', Validators.required],
@@ -94,7 +97,7 @@ export class AddActivityComponent {
   }
 
   showAddPersonForm(): void {
-    this.addPersonComponent.show();
+    this.addPersonComponent().show();
   }
 
   onPersonAdded(personData: PersonData): void {
