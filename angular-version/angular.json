@@ -30,7 +30,6 @@
               "rgbcolor"
             ],
             "polyfills": [
-              "zone.js",
               "@angular/localize/init"
             ],
             "tsConfig": "tsconfig.app.json",
@@ -74,12 +73,7 @@
             "testing": {
               "aot": false,
               "optimization": false,
-              "extractLicenses": false,
-              "polyfills": [
-                "zone.js",
-                "zone.js/testing",
-                "@angular/localize/init"
-              ]
+              "extractLicenses": false
             }
           },
           "defaultConfiguration": "production"
