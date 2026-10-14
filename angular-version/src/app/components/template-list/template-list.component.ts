@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, LOCALE_ID, inject, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, LOCALE_ID, inject, output, signal } from '@angular/core';
 
 import { TemplateService } from '../../services/template.service';
 import { WeeklyTemplate } from '../../models/template.model';
@@ -8,7 +8,7 @@ import { WeeklyTemplate } from '../../models/template.model';
   imports: [],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.css',
-  changeDetection: ChangeDetectionStrategy.Eager
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TemplateListComponent {
   private readonly templateService = inject(TemplateService);
@@ -18,15 +18,15 @@ export class TemplateListComponent {
   readonly cancelled = output<void>();
 
   readonly templates = this.templateService.allTemplates;
-  isVisible = false;
+  readonly isVisible = signal(false);
   private readonly locale = inject(LOCALE_ID);
 
   show(): void {
-    this.isVisible = true;
+    this.isVisible.set(true);
   }
 
   hide(): void {
-    this.isVisible = false;
+    this.isVisible.set(false);
     this.cancelled.emit();
   }
 

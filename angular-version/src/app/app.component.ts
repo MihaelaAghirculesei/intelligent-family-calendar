@@ -6,7 +6,7 @@ import { CalendarComponent } from './components/calendar/calendar.component';
   imports: [CalendarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
-  changeDetection: ChangeDetectionStrategy.Eager
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
   title = 'Intelligent Family Calendar';

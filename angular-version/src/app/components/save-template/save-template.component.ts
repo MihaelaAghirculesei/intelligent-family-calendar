@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output, signal } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SaveTemplateData } from '../../models/template.model';
@@ -8,7 +8,7 @@ import { SaveTemplateData } from '../../models/template.model';
   imports: [ReactiveFormsModule],
   templateUrl: './save-template.component.html',
   styleUrl: './save-template.component.css',
-  changeDetection: ChangeDetectionStrategy.Eager
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SaveTemplateComponent {
   private readonly fb = inject(FormBuilder);
@@ -17,7 +17,7 @@ export class SaveTemplateComponent {
   readonly cancelled = output<void>();
 
   templateForm: FormGroup;
-  isVisible = false;
+  readonly isVisible = signal(false);
 
   constructor() {
     this.templateForm = this.fb.group({
@@ -27,7 +27,7 @@ export class SaveTemplateComponent {
   }
 
   show(): void {
-    this.isVisible = true;
+    this.isVisible.set(true);
     this.templateForm.reset();
     
     const now = new Date();
@@ -36,7 +36,7 @@ export class SaveTemplateComponent {
   }
 
   hide(): void {
-    this.isVisible = false;
+    this.isVisible.set(false);
     this.cancelled.emit();
   }
 

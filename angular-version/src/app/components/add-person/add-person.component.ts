@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output, signal } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PersonData } from '../../services/person.service';
@@ -8,7 +8,7 @@ import { PersonData } from '../../services/person.service';
   imports: [ReactiveFormsModule],
   templateUrl: './add-person.component.html',
   styleUrl: './add-person.component.css',
-  changeDetection: ChangeDetectionStrategy.Eager
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddPersonComponent {
   private readonly fb = inject(FormBuilder);
@@ -17,7 +17,7 @@ export class AddPersonComponent {
   readonly cancelled = output<void>();
 
   personForm: FormGroup;
-  isVisible = false;
+  readonly isVisible = signal(false);
   readonly previewLabel = $localize`Preview`;
 
   predefinedColors = [
@@ -81,12 +81,12 @@ export class AddPersonComponent {
   }
 
   show(): void {
-    this.isVisible = true;
+    this.isVisible.set(true);
     this.personForm.reset({ color: '#2196F3' });
   }
 
   hide(): void {
-    this.isVisible = false;
+    this.isVisible.set(false);
     this.cancelled.emit();
   }
 

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, output, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output, viewChild, signal } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Activity, WeekDay } from '../../models/activity.model';
@@ -10,7 +10,7 @@ import { AddPersonComponent } from '../add-person/add-person.component';
   imports: [ReactiveFormsModule, AddPersonComponent],
   templateUrl: './add-activity.component.html',
   styleUrl: './add-activity.component.css',
-  changeDetection: ChangeDetectionStrategy.Eager
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddActivityComponent {
   private readonly fb = inject(FormBuilder);
@@ -21,7 +21,7 @@ export class AddActivityComponent {
   readonly cancelled = output<void>();
 
   activityForm: FormGroup;
-  isVisible = false;
+  readonly isVisible = signal(false);
   readonly persons = this.personService.allPersons;
 
   weekDays: {value: WeekDay, label: string}[] = [
@@ -45,12 +45,12 @@ export class AddActivityComponent {
   }
 
   show(): void {
-    this.isVisible = true;
+    this.isVisible.set(true);
     this.activityForm.reset();
   }
 
   hide(): void {
-    this.isVisible = false;
+    this.isVisible.set(false);
     this.cancelled.emit();
   }
 

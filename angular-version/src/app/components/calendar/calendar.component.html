@@ -6,8 +6,8 @@
         <button class="add-btn" (click)="showAddActivityForm()" i18n>➕ Add activity</button>
         <button class="template-btn" (click)="showSaveTemplateDialog()" i18n>💾 Save template</button>
         <button class="template-list-btn" (click)="showTemplateListDialog()" i18n>📋 Templates ({{ templateCount() }})</button>
-        <button class="export-btn" [disabled]="isExportingPdf" (click)="showExportPdfDialog()">
-          @if (isExportingPdf) {
+        <button class="export-btn" [disabled]="isExportingPdf()" (click)="showExportPdfDialog()">
+          @if (isExportingPdf()) {
             <ng-container i18n>⏳ Exporting...</ng-container>
           } @else {
             <ng-container i18n>📄 Export PDF</ng-container>
@@ -61,9 +61,9 @@
                      (mouseenter)="showDetails($event, block.activity)"
                      (mouseleave)="hideDetails()"
                      (cdkDragStarted)="hideDetails()"
-                     [class.editing]="editingActivityId === block.activity.id">
+                     [class.editing]="editingActivityId() === block.activity.id">
 
-                  @if (editingActivityId === block.activity.id) {
+                  @if (editingActivityId() === block.activity.id) {
                     <div class="edit-form" (click)="$event.stopPropagation()">
                       <input [(ngModel)]="editForm.title"
                              class="edit-input title-input"
@@ -125,7 +125,7 @@
       </div>
     </div>
 
-    @if (activityDetails; as details) {
+    @if (activityDetails(); as details) {
       <div class="activity-details"
            role="tooltip"
            [class.align-right]="details.alignRight"

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ChangeDetectionStrategy, computed, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ChangeDetectionStrategy, computed, inject, viewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -47,7 +47,7 @@ interface GridLayout {
   imports: [CommonModule, FormsModule, DragDropModule, AddActivityComponent, AddPersonComponent, SaveTemplateComponent, TemplateListComponent, ExportPdfOptionsComponent, HyphenatePipe],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css',
-  changeDetection: ChangeDetectionStrategy.Eager
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CalendarComponent implements OnInit {
   private readonly calendarService = inject(CalendarService);
@@ -70,10 +70,10 @@ export class CalendarComponent implements OnInit {
   readonly persons = this.personService.allPersons;
   readonly templateCount = computed(() => this.templateService.allTemplates().length);
   connectedDropLists: string[] = [];
-  isExportingPdf = false;
-  activityDetails: ActivityDetails | null = null;
+  readonly isExportingPdf = signal(false);
+  readonly activityDetails = signal<ActivityDetails | null>(null);
 
-  editingActivityId: string | null = null;
+  readonly editingActivityId = signal<string | null>(null);
   editForm: {
     title: string;
     timeRange: string;
@@ -123,22 +123,22 @@ export class CalendarComponent implements OnInit {
   // Narrow side-by-side blocks cut long titles short, so hovering any block
   // shows its full details next to it, on whichever side has room.
   showDetails(event: MouseEvent, activity: Activity): void {
-    if (this.editingActivityId) return;
+    if (this.editingActivityId()) return;
 
     const cardWidth = 260;
     const gap = 8;
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     const alignRight = rect.right + gap + cardWidth > window.innerWidth;
-    this.activityDetails = {
+    this.activityDetails.set({
       activity,
       top: Math.max(gap, Math.min(rect.top, window.innerHeight - 120)),
       left: alignRight ? rect.left - gap : rect.right + gap,
       alignRight
-    };
+    });
   }
 
   hideDetails(): void {
-    this.activityDetails = null;
+    this.activityDetails.set(null);
   }
 
   hourLabel(hour: number): string {
@@ -146,7 +146,7 @@ export class CalendarComponent implements OnInit {
   }
 
   getBlockStyle(block: ActivityBlock): { top: string; height: string; left: string; width: string } {
-    if (this.editingActivityId === block.activity.id) {
+    if (this.editingActivityId() === block.activity.id) {
       return { top: block.style.top, height: '150px', left: '2px', width: 'calc(100% - 4px)' };
     }
     return block.style;
@@ -324,7 +324,7 @@ export class CalendarComponent implements OnInit {
 
   startEdit(activity: Activity): void {
     this.hideDetails();
-    this.editingActivityId = activity.id;
+    this.editingActivityId.set(activity.id);
     this.editForm = {
       title: activity.title,
       timeRange: activity.timeRange || '',
@@ -333,7 +333,8 @@ export class CalendarComponent implements OnInit {
   }
 
   saveEdit(): void {
-    if (!this.editingActivityId) return;
+    const activityId = this.editingActivityId();
+    if (!activityId) return;
 
     const updates: Partial<Activity> = {
       title: this.editForm.title,
@@ -341,12 +342,12 @@ export class CalendarComponent implements OnInit {
       person: this.editForm.person
     };
 
-    this.calendarService.updateActivity(this.editingActivityId, updates);
+    this.calendarService.updateActivity(activityId, updates);
     this.cancelEdit();
   }
 
   cancelEdit(): void {
-    this.editingActivityId = null;
+    this.editingActivityId.set(null);
     const firstPerson = this.persons()[0]?.id ?? '';
     this.editForm = { title: '', timeRange: '', person: firstPerson };
   }
@@ -361,11 +362,12 @@ export class CalendarComponent implements OnInit {
   }
 
   deleteActivity(): void {
-    if (!this.editingActivityId) return;
+    const activityId = this.editingActivityId();
+    if (!activityId) return;
 
     const confirmed = confirm($localize`Are you sure you want to delete this activity?`);
     if (confirmed) {
-      this.calendarService.deleteActivity(this.editingActivityId);
+      this.calendarService.deleteActivity(activityId);
       this.cancelEdit();
     }
   }
@@ -375,9 +377,9 @@ export class CalendarComponent implements OnInit {
   }
 
   async onExportPdfConfirmed(choice: PdfExportChoice): Promise<void> {
-    if (this.isExportingPdf) return;
+    if (this.isExportingPdf()) return;
 
-    this.isExportingPdf = true;
+    this.isExportingPdf.set(true);
     const el = this.printArea().nativeElement;
 
     // Fix each day column to a set pixel width during export (instead of the
@@ -403,7 +405,7 @@ export class CalendarComponent implements OnInit {
     } finally {
       el.classList.remove('pdf-export', 'pdf-hide-weekend');
       el.style.removeProperty('--pdf-day-width');
-      this.isExportingPdf = false;
+      this.isExportingPdf.set(false);
     }
   }
 
