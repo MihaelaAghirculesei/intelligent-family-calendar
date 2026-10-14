@@ -32,7 +32,8 @@ The family and the schedule in the screenshots are made up.
   by side. The visible hours grow automatically if something starts before
   7:00 or ends after 22:00.
 - **Editing in place.** Add activities from a form, double-click a block to
-  edit or delete it, and drag it to another day.
+  edit or delete it, and drag it to another day or time; drops snap to
+  15 minutes and keep the duration.
 - **Undo and redo** for every change to the week (add, edit, move, delete,
   apply a template), with buttons or `Ctrl+Z` / `Ctrl+Y` (`Cmd` on macOS).
   Typing in a field keeps the browser's own text undo.
@@ -42,8 +43,8 @@ The family and the schedule in the screenshots are made up.
 - **PDF export** that always fills one landscape A4 page, with or without the
   weekend ([sample PDF](docs/sample-export.pdf)).
 - **Readable narrow blocks.** Titles are hyphenated at real syllable breaks; a
-  word that still doesn't fit ends with "…", and hovering any block shows its
-  full details.
+  word that still doesn't fit ends with "…", and every block shows its full
+  details on hover, or on tap on touch screens.
 - **English and Italian UI** from the same code base.
 - **Saved in the browser** (`localStorage`), with migrations for data written
   by older versions.
@@ -73,8 +74,8 @@ The family and the schedule in the screenshots are made up.
 | Hyphenation | `hyphen` (TeX patterns for Italian and English) |
 | i18n | `@angular/localize`, build-time, English source + Italian translation |
 | Build | `@angular/build` (esbuild + Vite) |
-| Tests | Vitest + jsdom via the Angular unit-test builder |
-| CI | GitHub Actions on Node 24: type check, production build, tests |
+| Tests | Vitest + jsdom for unit tests; Playwright end-to-end tests against the production build, in both languages and on an emulated phone |
+| CI | GitHub Actions on Node 24: type check, production build, unit and end-to-end tests; the demo deploys to GitHub Pages from `main` |
 
 ## Quick start
 
@@ -92,6 +93,7 @@ Other commands, from `angular-version/`:
 ```bash
 npm test -- --watch=false     # unit tests
 npm run build                 # production build of both languages
+npm run e2e                   # end-to-end tests (after npm run build)
 npx ng extract-i18n --output-path src/locale   # extract the English source texts
 ```
 
@@ -168,8 +170,11 @@ signals too. Dropping zone.js cut the polyfills from 35 kB to under 1 kB.
    from Karma to Vitest, and added English/Italian i18n with fictitious
    demo data.
 5. **October 2026: signals and zoneless.** Moved the state to signals, made
-   every component `OnPush` and removed zone.js, checking every feature in a
-   real browser along the way.
+   every component `OnPush` and removed zone.js.
+6. **October 2026: end-to-end tests, touch and drag in time.** Turned the
+   manual browser checks into Playwright tests that run in CI, added
+   tap-to-show details for touch screens, and made dragging change the time
+   as well as the day.
 
 ## Limitations
 
@@ -178,12 +183,12 @@ signals too. Dropping zone.js cut the polyfills from 35 kB to under 1 kB.
   import.
 - **One template week.** The calendar holds a typical week, not dated events,
   so there is no recurrence or calendar sync.
-- **Drag and drop changes the day, not the time.** Times are edited in the
-  edit form.
-- **Mouse-first.** The hover details have no touch equivalent yet; on narrow
-  screens the grid scrolls horizontally.
-- **Unit tests only.** Services, layout logic, shortcuts and pipes are covered
-  by Vitest; there are no end-to-end tests.
+- **Moving to another day needs drag and drop.** The edit form changes the
+  title, time and person, but not the day, so there is no keyboard-only way
+  to move an activity yet.
+- **Phones get a scrolling grid.** Seven readable columns don't fit a phone
+  screen, so the grid scrolls sideways there.
+- **End-to-end tests run in Chromium only**, desktop and an emulated phone.
 - **The vanilla prototype** in the root is kept for history and is not
   maintained.
 
