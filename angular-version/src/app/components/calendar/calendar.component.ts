@@ -72,6 +72,7 @@ export class CalendarComponent implements OnInit {
   connectedDropLists: string[] = [];
   readonly isExportingPdf = signal(false);
   readonly activityDetails = signal<ActivityDetails | null>(null);
+  private tapEndsDrag = false;
 
   readonly editingActivityId = signal<string | null>(null);
   editForm: {
@@ -120,25 +121,74 @@ export class CalendarComponent implements OnInit {
     return this.personService.getPersonById(person)?.name ?? person;
   }
 
-  // Narrow side-by-side blocks cut long titles short, so hovering any block
-  // shows its full details next to it, on whichever side has room.
-  showDetails(event: MouseEvent, activity: Activity): void {
+  // Narrow side-by-side blocks cut long titles short, so every block can show
+  // its full details: on hover with a mouse, on tap with touch or a pen,
+  // which have no hover.
+  onBlockPointerEnter(event: PointerEvent, activity: Activity): void {
+    if (event.pointerType === 'mouse') {
+      this.showDetails(event.currentTarget as HTMLElement, activity);
+    }
+  }
+
+  onBlockPointerLeave(event: PointerEvent): void {
+    if (event.pointerType === 'mouse') {
+      this.hideDetails();
+    }
+  }
+
+  onBlockPointerUp(event: PointerEvent, activity: Activity): void {
+    if (event.pointerType === 'mouse' || this.tapEndsDrag) return;
+
+    if (this.activityDetails()?.activity.id === activity.id) {
+      this.hideDetails();
+    } else {
+      this.showDetails(event.currentTarget as HTMLElement, activity);
+    }
+  }
+
+  onDragStarted(): void {
+    this.tapEndsDrag = true;
+    this.hideDetails();
+  }
+
+  // A tap outside the blocks closes the card; any press also starts a fresh
+  // gesture, so only the pointer-up that ends a drag is ignored.
+  @HostListener('document:pointerdown', ['$event'])
+  onDocumentPointerDown(event: PointerEvent): void {
+    this.tapEndsDrag = false;
+    if (!(event.target instanceof Element && event.target.closest('.grid-activity'))) {
+      this.hideDetails();
+    }
+  }
+
+  // The card is fixed to the viewport, so it would stay behind while the page
+  // or the grid scrolls away under it.
+  @HostListener('window:scroll')
+  hideDetails(): void {
+    this.activityDetails.set(null);
+  }
+
+  // Next to the block on whichever side has room; on a phone, where neither
+  // side does, over the block but inside the screen.
+  private showDetails(element: HTMLElement, activity: Activity): void {
     if (this.editingActivityId()) return;
 
     const cardWidth = 260;
     const gap = 8;
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const alignRight = rect.right + gap + cardWidth > window.innerWidth;
+    const rect = element.getBoundingClientRect();
+    const fitsRight = rect.right + gap + cardWidth <= window.innerWidth;
+    const fitsLeft = rect.left - gap - cardWidth >= 0;
+    const alignRight = !fitsRight && fitsLeft;
+    let left = Math.max(gap, Math.min(rect.left, window.innerWidth - cardWidth - gap));
+    if (fitsRight) left = rect.right + gap;
+    if (alignRight) left = rect.left - gap;
+
     this.activityDetails.set({
       activity,
       top: Math.max(gap, Math.min(rect.top, window.innerHeight - 120)),
-      left: alignRight ? rect.left - gap : rect.right + gap,
+      left,
       alignRight
     });
-  }
-
-  hideDetails(): void {
-    this.activityDetails.set(null);
   }
 
   hourLabel(hour: number): string {

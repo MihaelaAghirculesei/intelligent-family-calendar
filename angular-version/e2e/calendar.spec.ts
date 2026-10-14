@@ -65,6 +65,14 @@ test('shows the full details of a narrow block on hover', async ({ page }) => {
   await expect(card).toBeHidden();
 });
 
+test('closes the details when the page scrolls', async ({ page }) => {
+  await page.locator('.grid-activity', { hasText: 'Yoga' }).hover();
+  await expect(page.locator('.activity-details')).toBeVisible();
+
+  await page.mouse.wheel(0, 300);
+  await expect(page.locator('.activity-details')).toBeHidden();
+});
+
 test('adds a family member from the activity form', async ({ page }) => {
   await page.getByRole('button', { name: /Add activity/ }).click();
   await page.locator('app-add-activity').getByLabel('Person').selectOption('add_new_person');

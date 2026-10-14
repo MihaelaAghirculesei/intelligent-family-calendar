@@ -25,7 +25,7 @@
         }
       </div>
 
-      <div class="calendar-grid">
+      <div class="calendar-grid" (scroll)="hideDetails()">
         <div class="grid-header">
           <div class="hour-gutter-header"></div>
           @for (label of weekDayLabels; track label) {
@@ -58,9 +58,10 @@
                      [ngStyle]="getBlockStyle(block)"
                      [style.background-color]="getPersonColor(block.activity.person)"
                      (dblclick)="startEdit(block.activity)"
-                     (mouseenter)="showDetails($event, block.activity)"
-                     (mouseleave)="hideDetails()"
-                     (cdkDragStarted)="hideDetails()"
+                     (pointerenter)="onBlockPointerEnter($event, block.activity)"
+                     (pointerleave)="onBlockPointerLeave($event)"
+                     (pointerup)="onBlockPointerUp($event, block.activity)"
+                     (cdkDragStarted)="onDragStarted()"
                      [class.editing]="editingActivityId() === block.activity.id">
 
                   @if (editingActivityId() === block.activity.id) {

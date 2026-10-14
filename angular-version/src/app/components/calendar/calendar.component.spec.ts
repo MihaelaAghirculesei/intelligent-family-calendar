@@ -89,14 +89,45 @@ describe('CalendarComponent', () => {
       fixture.detectChanges();
     });
 
+    const pointer = (type: string, pointerType: string, target: EventTarget = blockElement()) =>
+      target.dispatchEvent(new PointerEvent(type, { pointerType, bubbles: true }));
+
     it('shows the full title, person and time while hovering a block', () => {
-      blockElement().dispatchEvent(new MouseEvent('mouseenter'));
+      pointer('pointerenter', 'mouse');
       fixture.detectChanges();
 
       expect(card()?.textContent).toContain('Swimming lesson');
       expect(card()?.textContent).toContain('16:00-17:00');
 
-      blockElement().dispatchEvent(new MouseEvent('mouseleave'));
+      pointer('pointerleave', 'mouse');
+      fixture.detectChanges();
+
+      expect(card()).toBeNull();
+    });
+
+    it('toggles the details with a tap on touch screens', () => {
+      pointer('pointerup', 'touch');
+      fixture.detectChanges();
+      expect(card()?.textContent).toContain('Swimming lesson');
+
+      pointer('pointerup', 'touch');
+      fixture.detectChanges();
+      expect(card()).toBeNull();
+    });
+
+    it('closes the details on a tap outside the blocks', () => {
+      pointer('pointerup', 'touch');
+      fixture.detectChanges();
+
+      pointer('pointerdown', 'touch', document.body);
+      fixture.detectChanges();
+
+      expect(card()).toBeNull();
+    });
+
+    it('does not open the details at the end of a drag', () => {
+      component.onDragStarted();
+      pointer('pointerup', 'touch');
       fixture.detectChanges();
 
       expect(card()).toBeNull();
