@@ -56,9 +56,16 @@
                 <div class="grid-activity draggable-activity"
                      cdkDrag
                      [cdkDragData]="block.activity"
+                     [attr.data-activity-id]="block.activity.id"
+                     [attr.role]="editingActivityId() === block.activity.id ? 'group' : 'button'"
+                     [attr.tabindex]="editingActivityId() === block.activity.id ? -1 : 0"
+                     [attr.aria-label]="blockLabel(block.activity)"
                      [ngStyle]="getBlockStyle(block)"
                      [style.background-color]="getPersonColor(block.activity.person)"
                      (dblclick)="startEdit(block.activity)"
+                     (keydown)="onBlockKeydown($event, block.activity)"
+                     (focus)="onBlockFocus($event, block.activity)"
+                     (blur)="onBlockBlur(block.activity)"
                      (pointerenter)="onBlockPointerEnter($event, block.activity)"
                      (pointerleave)="onBlockPointerLeave($event)"
                      (pointerdown)="onBlockPointerDown($event)"
@@ -68,20 +75,19 @@
                      [class.editing]="editingActivityId() === block.activity.id">
 
                   @if (editingActivityId() === block.activity.id) {
-                    <div class="edit-form" (click)="$event.stopPropagation()">
+                    <div class="edit-form"
+                         (click)="$event.stopPropagation()"
+                         (keydown.escape)="closeEdit()">
                       <input [(ngModel)]="editForm.title"
                              class="edit-input title-input"
                              placeholder="Title"
                              i18n-placeholder
-                             (keyup.enter)="saveEdit()"
-                             (keyup.escape)="cancelEdit()"
-                             #titleInput>
+                             (keydown.enter)="saveEdit()">
                       <input [(ngModel)]="editForm.timeRange"
                              class="edit-input time-input"
                              placeholder="Time (e.g. 15:00-16:00)"
                              i18n-placeholder
-                             (keyup.enter)="saveEdit()"
-                             (keyup.escape)="cancelEdit()">
+                             (keydown.enter)="saveEdit()">
                       <div class="person-selector">
                         <select [(ngModel)]="editForm.person" class="edit-select">
                           @for (person of persons(); track person.id) {
@@ -112,7 +118,7 @@
                                 title="Delete activity"
                                 i18n-title>🗑️</button>
                         <button (click)="saveEdit()" class="save-btn">✓</button>
-                        <button (click)="cancelEdit()" class="cancel-btn">✕</button>
+                        <button (click)="closeEdit()" class="cancel-btn">✕</button>
                       </div>
                     </div>
                   } @else {

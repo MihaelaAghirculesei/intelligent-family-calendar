@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ChangeDetectionStrategy, computed, inject, viewChild, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, Injector, OnInit, ChangeDetectionStrategy, afterNextRender, computed, inject, viewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -56,6 +56,8 @@ export class CalendarComponent implements OnInit {
   private readonly templateService = inject(TemplateService);
   private readonly pdfExportService = inject(PdfExportService);
   private readonly backupService = inject(BackupService);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
 
   readonly addActivityComponent = viewChild.required<AddActivityComponent>('addActivityComponent');
   readonly addPersonComponent = viewChild.required<AddPersonComponent>('addPersonComponent');
@@ -123,6 +125,51 @@ export class CalendarComponent implements OnInit {
 
   getPersonName(person: string): string {
     return this.personService.getPersonById(person)?.name ?? person;
+  }
+
+  // What a screen reader announces for a block, since a narrow block may
+  // show only part of its title.
+  blockLabel(activity: Activity): string {
+    return [activity.title, this.getPersonName(activity.person), activity.timeRange]
+      .filter(Boolean)
+      .join(', ');
+  }
+
+  // Keyboard access to the blocks: Tab focuses one and shows its details,
+  // Enter or Space opens the edit form, Escape closes the details.
+  onBlockKeydown(event: KeyboardEvent, activity: Activity): void {
+    // Keys typed into the edit form bubble up to the block; leave them alone.
+    if (event.target !== event.currentTarget) return;
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.startEdit(activity);
+    } else if (event.key === 'Escape') {
+      this.hideDetails();
+    }
+  }
+
+  // Only focus from the keyboard shows the card; a click or tap focuses the
+  // block too, but there hover and tap already decide.
+  onBlockFocus(event: FocusEvent, activity: Activity): void {
+    const block = event.currentTarget as HTMLElement;
+    if (this.matchesFocusVisible(block)) {
+      this.showDetails(block, activity);
+    }
+  }
+
+  onBlockBlur(activity: Activity): void {
+    if (this.activityDetails()?.activity.id === activity.id) {
+      this.hideDetails();
+    }
+  }
+
+  private matchesFocusVisible(element: HTMLElement): boolean {
+    try {
+      return element.matches(':focus-visible');
+    } catch {
+      return false;
+    }
   }
 
   // Narrow side-by-side blocks cut long titles short, so every block can show
@@ -412,6 +459,7 @@ export class CalendarComponent implements OnInit {
       timeRange: activity.timeRange || '',
       person: activity.person
     };
+    this.focusBlock(activity.id, '.title-input');
   }
 
   saveEdit(): void {
@@ -425,7 +473,31 @@ export class CalendarComponent implements OnInit {
     };
 
     this.calendarService.updateActivity(activityId, updates);
+    this.closeEdit();
+  }
+
+  // Closes the form from its own controls and gives the focus back to the
+  // block, so a keyboard user carries on from where they were.
+  closeEdit(): void {
+    const activityId = this.editingActivityId();
     this.cancelEdit();
+    if (activityId) {
+      this.focusBlock(activityId);
+    }
+  }
+
+  // Waits for the next render, since opening or closing the form re-renders
+  // the block.
+  private focusBlock(activityId: string, inside?: string): void {
+    afterNextRender(() => {
+      const block = Array.from(this.host.nativeElement.querySelectorAll<HTMLElement>('.grid-activity'))
+        .find(el => el.dataset['activityId'] === activityId);
+      const target = inside ? block?.querySelector<HTMLElement>(inside) : block;
+      target?.focus();
+      if (target instanceof HTMLInputElement) {
+        target.select();
+      }
+    }, { injector: this.injector });
   }
 
   cancelEdit(): void {

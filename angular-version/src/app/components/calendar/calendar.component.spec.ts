@@ -134,6 +134,51 @@ describe('CalendarComponent', () => {
     });
   });
 
+  describe('keyboard access to the blocks', () => {
+    const blockElement = () =>
+      fixture.nativeElement.querySelector('.grid-activity') as HTMLElement;
+    const key = (k: string, target: EventTarget = blockElement()) =>
+      target.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+
+    beforeEach(() => {
+      add('Swimming lesson', '16:00-17:00');
+      fixture.detectChanges();
+    });
+
+    it('makes every block a focusable button named by its title, person and time', () => {
+      expect(blockElement().getAttribute('tabindex')).toBe('0');
+      expect(blockElement().getAttribute('role')).toBe('button');
+      expect(blockElement().getAttribute('aria-label')).toBe('Swimming lesson, p1, 16:00-17:00');
+    });
+
+    it('opens the edit form with Enter or Space', () => {
+      key('Enter');
+      expect(component.editingActivityId()).toBe('Swimming lesson');
+
+      component.cancelEdit();
+      key(' ');
+      expect(component.editingActivityId()).toBe('Swimming lesson');
+    });
+
+    it('turns the block into a group while it holds the form', () => {
+      key('Enter');
+      fixture.detectChanges();
+
+      expect(blockElement().getAttribute('role')).toBe('group');
+      expect(blockElement().getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('ignores keys typed into the edit form', () => {
+      key('Enter');
+      fixture.detectChanges();
+      component.editForm.title = 'Swimming lesson and diving';
+
+      key(' ', fixture.nativeElement.querySelector('.title-input'));
+
+      expect(component.editForm.title).toBe('Swimming lesson and diving');
+    });
+  });
+
   describe('keyboard shortcuts', () => {
     beforeEach(() => {
       add('a', '10:00-11:00');
