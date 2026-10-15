@@ -32,8 +32,13 @@ The family and the schedule in the screenshots are made up.
   by side. The visible hours grow automatically if something starts before
   7:00 or ends after 22:00.
 - **Editing in place.** Add activities from a form, double-click a block to
-  edit or delete it, and drag it to another day or time; drops snap to
-  15 minutes and keep the duration.
+  edit, move to another day or delete it, and drag it to another day or time;
+  drops snap to 15 minutes and keep the duration.
+- **Keyboard and screen readers.** `Tab` moves through the blocks and shows
+  their details, `Enter` opens the edit form and `Escape` closes it, so the
+  week can be edited without a mouse. Every control has a name a screen reader
+  can announce, and block text turns black or white to stay readable on any
+  person's color.
 - **Undo and redo** for every change to the week (add, edit, move, delete,
   apply a template), with buttons or `Ctrl+Z` / `Ctrl+Y` (`Cmd` on macOS).
   Typing in a field keeps the browser's own text undo.
@@ -74,7 +79,7 @@ The family and the schedule in the screenshots are made up.
 | Hyphenation | `hyphen` (TeX patterns for Italian and English) |
 | i18n | `@angular/localize`, build-time, English source + Italian translation |
 | Build | `@angular/build` (esbuild + Vite) |
-| Tests | Vitest + jsdom for unit tests; Playwright end-to-end tests against the production build, in both languages and on an emulated phone |
+| Tests | Vitest + jsdom for unit tests; Playwright end-to-end tests against the production build in Chromium, Firefox and WebKit, in both languages and on an emulated Android phone and iPhone; axe-core accessibility checks of every dialog (WCAG 2.2 AA) |
 | CI | GitHub Actions on Node 24: type check, production build, unit and end-to-end tests; the demo deploys to GitHub Pages from `main` |
 
 ## Quick start
@@ -108,7 +113,8 @@ angular-version/src/
 │   ├── components/      calendar grid, dialogs (activity, person, template, PDF options)
 │   ├── services/        calendar, history (undo/redo), persons, templates, PDF export
 │   ├── models/          typed activity, history and template models
-│   └── pipes/           hyphenation for activity titles
+│   ├── pipes/           hyphenation for activity titles
+│   └── utils/           readable text color on any background
 └── locale/              messages.it.xlf (Italian translation)
 
 index.html, styles.css   the original vanilla prototype, kept for reference
@@ -156,6 +162,12 @@ signal it reads, an event in its template or an input changes, so state that
 changes after an `await` (the PDF export, reading an imported file) lives in
 signals too. Dropping zone.js cut the polyfills from 35 kB to under 1 kB.
 
+**Text color from the background.** Family members can have any color, so no
+single text color works on all of them: white on the demo's green reached
+only 2.8:1. Each block, legend entry and preview now uses white or black,
+whichever contrasts more with its background; one of the two always reaches
+at least 4.58:1, above the 4.5:1 that WCAG asks for.
+
 ## How it evolved
 
 1. **August 2025: vanilla prototype.** A static HTML table with print styles,
@@ -175,6 +187,10 @@ signals too. Dropping zone.js cut the polyfills from 35 kB to under 1 kB.
    manual browser checks into Playwright tests that run in CI, added
    tap-to-show details for touch screens, and made dragging change the time
    as well as the day.
+7. **October 2026: keyboard, accessibility and three browsers.** Made the
+   blocks usable from the keyboard with the day in the edit form, fixed what
+   axe-core found (contrast, unnamed buttons and fields), and ran the
+   end-to-end tests in Firefox and WebKit as well.
 
 ## Limitations
 
@@ -183,12 +199,11 @@ signals too. Dropping zone.js cut the polyfills from 35 kB to under 1 kB.
   import.
 - **One template week.** The calendar holds a typical week, not dated events,
   so there is no recurrence or calendar sync.
-- **Moving to another day needs drag and drop.** The edit form changes the
-  title, time and person, but not the day, so there is no keyboard-only way
-  to move an activity yet.
 - **Phones get a scrolling grid.** Seven readable columns don't fit a phone
   screen, so the grid scrolls sideways there.
-- **End-to-end tests run in Chromium only**, desktop and an emulated phone.
+- **Accessibility is checked automatically, not by people.** axe-core and the
+  keyboard tests catch a lot, but the app has not been tried with a real
+  screen reader user.
 - **The vanilla prototype** in the root is kept for history and is not
   maintained.
 
