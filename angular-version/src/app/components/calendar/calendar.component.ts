@@ -85,7 +85,8 @@ export class CalendarComponent implements OnInit {
     title: string;
     timeRange: string;
     person: Person;
-  } = { title: '', timeRange: '', person: '' };
+    day: WeekDay;
+  } = { title: '', timeRange: '', person: '', day: 'monday' };
 
   weekDays: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   weekDayLabels = [
@@ -100,6 +101,7 @@ export class CalendarComponent implements OnInit {
   private readonly defaultStartHour = 7;
   private readonly defaultEndHour = 22;
   readonly pxPerMinute = 1; // 60px per hour
+  private readonly editFormHeightPx = 192;
 
   // Recomputed only when the week changes.
   private readonly layout = computed(() => this.computeLayout(this.calendarData()));
@@ -257,7 +259,10 @@ export class CalendarComponent implements OnInit {
 
   getBlockStyle(block: ActivityBlock): { top: string; height: string; left: string; width: string } {
     if (this.editingActivityId() === block.activity.id) {
-      return { top: block.style.top, height: '150px', left: '2px', width: 'calc(100% - 4px)' };
+      // Opened near the bottom of the grid, the form moves up to stay inside.
+      const height = Math.min(this.editFormHeightPx, this.gridHeightPx);
+      const top = Math.max(0, Math.min(parseFloat(block.style.top), this.gridHeightPx - height));
+      return { top: `${top}px`, height: `${height}px`, left: '2px', width: 'calc(100% - 4px)' };
     }
     return block.style;
   }
@@ -457,11 +462,14 @@ export class CalendarComponent implements OnInit {
     this.editForm = {
       title: activity.title,
       timeRange: activity.timeRange || '',
-      person: activity.person
+      person: activity.person,
+      day: this.dayOf(activity.id) ?? 'monday'
     };
     this.focusBlock(activity.id, '.title-input');
   }
 
+  // A new day in the form moves the activity, together with the other
+  // changes, so the keyboard can do what drag and drop does.
   saveEdit(): void {
     const activityId = this.editingActivityId();
     if (!activityId) return;
@@ -472,8 +480,18 @@ export class CalendarComponent implements OnInit {
       person: this.editForm.person
     };
 
-    this.calendarService.updateActivity(activityId, updates);
+    const fromDay = this.dayOf(activityId);
+    if (fromDay && fromDay !== this.editForm.day) {
+      this.calendarService.moveActivity(activityId, fromDay, this.editForm.day, updates);
+    } else {
+      this.calendarService.updateActivity(activityId, updates);
+    }
     this.closeEdit();
+  }
+
+  private dayOf(activityId: string): WeekDay | undefined {
+    return this.weekDays.find(day =>
+      this.calendarData().cells.get(day)?.activities.some(a => a.id === activityId));
   }
 
   // Closes the form from its own controls and gives the focus back to the
@@ -503,7 +521,7 @@ export class CalendarComponent implements OnInit {
   cancelEdit(): void {
     this.editingActivityId.set(null);
     const firstPerson = this.persons()[0]?.id ?? '';
-    this.editForm = { title: '', timeRange: '', person: firstPerson };
+    this.editForm = { title: '', timeRange: '', person: firstPerson, day: 'monday' };
   }
 
   showAddPersonForm(): void {

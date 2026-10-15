@@ -88,6 +88,14 @@
                              placeholder="Time (e.g. 15:00-16:00)"
                              i18n-placeholder
                              (keydown.enter)="saveEdit()">
+                      <select [(ngModel)]="editForm.day"
+                              class="edit-select day-select"
+                              aria-label="Day"
+                              i18n-aria-label>
+                        @for (weekDay of weekDays; track weekDay; let i = $index) {
+                          <option [value]="weekDay">{{ weekDayLabels[i] }}</option>
+                        }
+                      </select>
                       <div class="person-selector">
                         <select [(ngModel)]="editForm.person" class="edit-select">
                           @for (person of persons(); track person.id) {

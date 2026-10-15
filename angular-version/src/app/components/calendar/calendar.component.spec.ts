@@ -179,6 +179,48 @@ describe('CalendarComponent', () => {
     });
   });
 
+  describe('edit form', () => {
+    const activityOn = (day: WeekDay, id: string) =>
+      calendar.getCell(day)!.activities.find(a => a.id === id);
+
+    beforeEach(() => add('a', '10:00-11:00', 'tuesday'));
+
+    it('starts with the day the activity is on', () => {
+      component.startEdit(activityOn('tuesday', 'a')!);
+      expect(component.editForm.day).toBe('tuesday');
+    });
+
+    it('moves the activity to the chosen day with its other changes', () => {
+      component.startEdit(activityOn('tuesday', 'a')!);
+      component.editForm.day = 'friday';
+      component.editForm.title = 'Chess';
+      component.saveEdit();
+
+      expect(activityOn('tuesday', 'a')).toBeUndefined();
+      expect(activityOn('friday', 'a')?.title).toBe('Chess');
+
+      history.undo();
+      expect(activityOn('tuesday', 'a')?.title).toBe('a');
+      expect(activityOn('friday', 'a')).toBeUndefined();
+    });
+
+    it('edits in place when the day stays the same', () => {
+      component.startEdit(activityOn('tuesday', 'a')!);
+      component.editForm.timeRange = '12:00-13:00';
+      component.saveEdit();
+
+      expect(activityOn('tuesday', 'a')?.timeRange).toBe('12:00-13:00');
+    });
+
+    it('keeps the form inside the grid for an activity at the bottom', () => {
+      add('late', '21:00-22:00', 'monday');
+      component.startEdit(activityOn('monday', 'late')!);
+
+      const style = component.getBlockStyle(block('late'));
+      expect(parseFloat(style.top) + parseFloat(style.height)).toBeLessThanOrEqual(component.gridHeightPx);
+    });
+  });
+
   describe('keyboard shortcuts', () => {
     beforeEach(() => {
       add('a', '10:00-11:00');

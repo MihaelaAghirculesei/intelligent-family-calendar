@@ -43,6 +43,32 @@ test('Enter opens the edit form, Enter in a field saves and the focus returns', 
   await expect(block(page, 'Pilates')).toBeFocused();
 });
 
+test('the keyboard alone moves an activity to another day, and one undo moves it back', async ({ page }) => {
+  await block(page, 'Grocery shopping').focus();
+  await page.keyboard.press('Enter');
+
+  // The form takes the focus once it has rendered; only then does Tab start
+  // from the title. Title, time, then the day field; one step up is Saturday.
+  await expect(page.locator('.title-input')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  const day = page.getByRole('combobox', { name: 'Day' });
+  await expect(day).toBeFocused();
+  await expect(day).toHaveValue('sunday');
+  await page.keyboard.press('ArrowUp');
+  await expect(day).toHaveValue('saturday');
+
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Enter');
+
+  const saturday = page.locator('.day-column[data-day="saturday"]');
+  await expect(saturday.locator('.grid-activity', { hasText: 'Grocery shopping' })).toBeFocused();
+  await expect(page.locator('.day-column[data-day="sunday"] .grid-activity')).toHaveCount(0);
+
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.day-column[data-day="sunday"] .grid-activity', { hasText: 'Grocery shopping' })).toBeVisible();
+});
+
 test('Escape closes the edit form without saving', async ({ page }) => {
   await block(page, 'Yoga').focus();
   await page.keyboard.press('Enter');
