@@ -1,6 +1,6 @@
-import { devices, expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test.use({ ...devices['Pixel 7'] });
+// Runs on the phone projects only (see playwright.config.ts).
 
 test.beforeEach(async ({ page }) => {
   page.on('dialog', dialog => dialog.accept());

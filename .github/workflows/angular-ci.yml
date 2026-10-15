@@ -34,8 +34,8 @@ jobs:
       - name: Unit tests
         run: npx ng test --watch=false
 
-      - name: Install the browser for end-to-end tests
-        run: npx playwright install --with-deps chromium
+      - name: Install the browsers for end-to-end tests
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: End-to-end tests
         run: npx playwright test
