@@ -79,7 +79,7 @@
   border-radius: 6px;
   padding: 10px 12px;
   margin: 4px 0 20px;
-  color: #6c757d;
+  color: #5a6268;
   font-size: 13px;
 }
 
@@ -112,10 +112,10 @@
 }
 
 .btn-primary {
-  background-color: #4CAF50;
+  background-color: #2E7D32;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #45a049;
+  background-color: #1B5E20;
 }

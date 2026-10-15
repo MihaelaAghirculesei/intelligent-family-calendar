@@ -84,7 +84,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #2E7D32;
 }
 
 .form-group input.error,
@@ -120,7 +120,7 @@
 .template-info ul {
   margin: 0;
   padding-left: 20px;
-  color: #6c757d;
+  color: #5a6268;
 }
 
 .template-info li {
@@ -157,12 +157,12 @@
 }
 
 .btn-primary {
-  background-color: #4CAF50;
+  background-color: #2E7D32;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #45a049;
+  background-color: #1B5E20;
 }
 
 .btn-primary:disabled {

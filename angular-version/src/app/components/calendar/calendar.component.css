@@ -45,7 +45,7 @@ h1 {
 }
 
 .add-btn {
-    background-color: #4CAF50;
+    background-color: #2E7D32;
     color: white;
     border: none;
     padding: 8px 15px;
@@ -57,7 +57,7 @@ h1 {
 }
 
 .add-btn:hover {
-    background-color: #45a049;
+    background-color: #1B5E20;
 }
 
 .template-btn {
@@ -450,7 +450,7 @@ h1 {
 }
 
 .save-btn {
-    background: #4CAF50;
+    background: #2E7D32;
     color: white;
 }
 
@@ -460,7 +460,7 @@ h1 {
 }
 
 .save-btn:hover {
-    background: #45a049;
+    background: #1B5E20;
 }
 
 .cancel-btn:hover {
@@ -503,7 +503,7 @@ h1 {
 
 .add-person-btn {
     border: none;
-    background: #4CAF50;
+    background: #2E7D32;
     color: white;
     border-radius: 2px;
     padding: 1px 3px;
@@ -515,7 +515,7 @@ h1 {
 }
 
 .add-person-btn:hover {
-    background: #45a049;
+    background: #1B5E20;
 }
 
 @media (max-width: 900px) {
