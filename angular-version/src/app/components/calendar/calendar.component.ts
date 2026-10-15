@@ -350,7 +350,7 @@ export class CalendarComponent implements OnInit {
     const timeRange = this.timeRangeAtDrop(activity, event.container.element.nativeElement, event.dropPoint.y);
     if (fromDay === day && timeRange === activity.timeRange) return;
 
-    this.calendarService.moveActivity(activity.id, fromDay, day, timeRange);
+    this.calendarService.moveActivity(activity.id, fromDay, day, { timeRange });
   }
 
   // Keeps the duration and starts the activity where its block was dropped,

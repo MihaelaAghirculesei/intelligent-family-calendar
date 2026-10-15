@@ -56,7 +56,7 @@ describe('CalendarService', () => {
   it('moves an activity to another time and undoes day and time together', () => {
     calendar.addActivity(activity('a', '10:00-11:00'), 'monday');
 
-    calendar.moveActivity('a', 'monday', 'tuesday', '14:30-15:30');
+    calendar.moveActivity('a', 'monday', 'tuesday', { timeRange: '14:30-15:30' });
     expect(calendar.getCell('tuesday')!.activities[0].timeRange).toBe('14:30-15:30');
 
     history.undo();
@@ -65,6 +65,29 @@ describe('CalendarService', () => {
 
     history.redo();
     expect(calendar.getCell('tuesday')!.activities[0].timeRange).toBe('14:30-15:30');
+  });
+
+  it('moves an activity with new details and undoes all of it in one step', () => {
+    calendar.addActivity(activity('a', '10:00-11:00'), 'monday');
+
+    calendar.moveActivity('a', 'monday', 'thursday', { title: 'Chess', person: 'p2', timeRange: '15:00-16:00' });
+    expect(calendar.getCell('thursday')!.activities[0]).toEqual(
+      { id: 'a', title: 'Chess', person: 'p2', timeRange: '15:00-16:00' });
+
+    history.undo();
+    expect(idsOn('thursday')).toEqual([]);
+    expect(calendar.getCell('monday')!.activities[0]).toEqual(activity('a', '10:00-11:00'));
+
+    history.redo();
+    expect(calendar.getCell('thursday')!.activities[0].title).toBe('Chess');
+  });
+
+  it('never lets the updates of a move change the activity id', () => {
+    calendar.addActivity(activity('a'), 'monday');
+
+    calendar.moveActivity('a', 'monday', 'friday', { id: 'b' });
+
+    expect(idsOn('friday')).toEqual(['a']);
   });
 
   it('undoes an add and a delete', () => {

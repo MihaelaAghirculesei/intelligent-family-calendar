@@ -99,9 +99,9 @@ export class CalendarService {
     this.restoreWeek([...school, ...demoWeek]);
   }
 
-  // Moves an activity to another day and, when a time range is given, to
-  // another time as well; undo restores both in one step.
-  moveActivity(activityId: string, fromDay: WeekDay, toDay: WeekDay, timeRange?: string): boolean {
+  // Moves an activity to another day and can change its time, title or
+  // person in the same step, so one undo restores all of it.
+  moveActivity(activityId: string, fromDay: WeekDay, toDay: WeekDay, updates: Partial<Activity> = {}): boolean {
     const fromCell = this.calendarData.cells.get(fromDay);
     const toCell = this.calendarData.cells.get(toDay);
 
@@ -110,23 +110,21 @@ export class CalendarService {
     const activityIndex = fromCell.activities.findIndex(a => a.id === activityId);
     if (activityIndex === -1) return false;
 
-    const activity = fromCell.activities[activityIndex];
+    const original = fromCell.activities[activityIndex];
+    const moved = { ...original, ...updates, id: original.id };
     if (this.historyService) {
       this.historyService.addAction({
         type: 'move',
         activityId,
         originalPosition: { day: fromDay },
         newPosition: { day: toDay },
-        originalData: { timeRange: activity.timeRange },
-        newData: { timeRange: timeRange ?? activity.timeRange }
+        originalData: { ...original },
+        newData: { ...moved }
       });
     }
 
     fromCell.activities.splice(activityIndex, 1);
-    if (timeRange !== undefined) {
-      activity.timeRange = timeRange;
-    }
-    toCell.activities.push(activity);
+    toCell.activities.push(moved);
 
     this.notifyChange();
     return true;
@@ -176,8 +174,8 @@ export class CalendarService {
     return true;
   }
 
-  // Moves recorded before moves could change the time carry no time data.
-  moveActivityDirect(activityId: string, fromDay: WeekDay, toDay: WeekDay, time?: { timeRange?: string }): boolean {
+  // Puts the activity back as it was recorded before or after the move.
+  moveActivityDirect(activityId: string, fromDay: WeekDay, toDay: WeekDay, data?: Partial<Activity>): boolean {
     const fromCell = this.calendarData.cells.get(fromDay);
     const toCell = this.calendarData.cells.get(toDay);
 
@@ -187,10 +185,7 @@ export class CalendarService {
     if (activityIndex === -1) return false;
 
     const activity = fromCell.activities.splice(activityIndex, 1)[0];
-    if (time) {
-      activity.timeRange = time.timeRange;
-    }
-    toCell.activities.push(activity);
+    toCell.activities.push({ ...activity, ...data, id: activity.id });
 
     this.notifyChange();
     return true;
