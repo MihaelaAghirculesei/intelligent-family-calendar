@@ -111,6 +111,13 @@ export class AddPersonComponent {
     this.personForm.patchValue({ color });
   }
 
+  // Built here rather than with i18n-aria-label in the template: an
+  // interpolated i18n attribute ends up as a DOM property, which does not
+  // exist for aria-label, so the swatches would stay unnamed.
+  colorLabel(color: string): string {
+    return $localize`Color ${color}:color:`;
+  }
+
   // The preview uses the same text color as the person's blocks will.
   previewTextColor(): string {
     return readableTextColor(this.personForm.get('color')?.value ?? '');

@@ -100,7 +100,10 @@
                         }
                       </select>
                       <div class="person-selector">
-                        <select [(ngModel)]="editForm.person" class="edit-select">
+                        <select [(ngModel)]="editForm.person"
+                                class="edit-select"
+                                aria-label="Person"
+                                i18n-aria-label>
                           @for (person of persons(); track person.id) {
                             <option [value]="person.id">{{ person.name }}</option>
                           }
@@ -109,27 +112,47 @@
                                 class="add-person-btn"
                                 (click)="showAddPersonForm()"
                                 title="Add new person"
-                                i18n-title>
+                                i18n-title
+                                aria-label="Add new person"
+                                i18n-aria-label>
                           ➕
                         </button>
                       </div>
+                      <!-- The symbols alone would be read out as "check mark" and
+                           the like, so every button is named by aria-label. -->
                       <div class="edit-buttons">
                         <button (click)="onUndo()"
                                 [disabled]="!canUndo()"
                                 class="undo-btn"
                                 title="Undo"
-                                i18n-title>↶</button>
+                                i18n-title
+                                aria-label="Undo"
+                                i18n-aria-label>↶</button>
                         <button (click)="onRedo()"
                                 [disabled]="!canRedo()"
                                 class="redo-btn"
                                 title="Redo"
-                                i18n-title>↷</button>
+                                i18n-title
+                                aria-label="Redo"
+                                i18n-aria-label>↷</button>
                         <button (click)="deleteActivity()"
                                 class="delete-btn"
                                 title="Delete activity"
-                                i18n-title>🗑️</button>
-                        <button (click)="saveEdit()" class="save-btn">✓</button>
-                        <button (click)="closeEdit()" class="cancel-btn">✕</button>
+                                i18n-title
+                                aria-label="Delete activity"
+                                i18n-aria-label>🗑️</button>
+                        <button (click)="saveEdit()"
+                                class="save-btn"
+                                title="Save"
+                                i18n-title
+                                aria-label="Save"
+                                i18n-aria-label>✓</button>
+                        <button (click)="closeEdit()"
+                                class="cancel-btn"
+                                title="Cancel"
+                                i18n-title
+                                aria-label="Cancel"
+                                i18n-aria-label>✕</button>
                       </div>
                     </div>
                   } @else {

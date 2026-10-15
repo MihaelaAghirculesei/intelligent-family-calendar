@@ -3,7 +3,7 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 i18n>Add new person</h2>
-        <button class="close-btn" (click)="hide()">&times;</button>
+        <button class="close-btn" (click)="hide()" aria-label="Close" i18n-aria-label>&times;</button>
       </div>
     
       <form [formGroup]="personForm" (ngSubmit)="onSubmit()" class="person-form">
@@ -26,12 +26,14 @@
         <div class="form-group">
           <label for="color" i18n>Color *</label>
           <div class="color-selection">
-            <div class="color-grid">
+            <div class="color-grid" role="group" aria-label="Color" i18n-aria-label>
               @for (color of predefinedColors; track color) {
-                <button 
+                <button
                   type="button"
                   class="color-option"
                   [class.selected]="personForm.get('color')?.value === color"
+                  [attr.aria-pressed]="personForm.get('color')?.value === color"
+                  [attr.aria-label]="colorLabel(color)"
                   [style.background-color]="color"
                   (click)="selectColor(color)">
                 </button>

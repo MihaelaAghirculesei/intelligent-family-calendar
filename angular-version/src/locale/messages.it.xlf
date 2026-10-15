@@ -910,6 +910,18 @@ Questa azione non può essere annullata.</target>
           <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="7819314041543176992" datatype="html">
+        <source>Close</source>
+        <target>Chiudi</target>
+      </trans-unit>
+      <trans-unit id="3920528220352446976" datatype="html">
+        <source>Color <x id="color" equiv-text="color"/></source>
+        <target>Colore <x id="color" equiv-text="color"/></target>
+      </trans-unit>
+      <trans-unit id="3768927257183755959" datatype="html">
+        <source>Save</source>
+        <target>Salva</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
