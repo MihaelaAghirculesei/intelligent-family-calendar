@@ -47,7 +47,9 @@
             </div>
           </div>
           <div class="color-preview">
-            <div class="preview-box" [style.background-color]="personForm.get('color')?.value">
+            <div class="preview-box"
+                 [style.background-color]="personForm.get('color')?.value"
+                 [style.color]="previewTextColor()">
               <span>{{ personForm.get('name')?.value || previewLabel }}</span>
             </div>
           </div>

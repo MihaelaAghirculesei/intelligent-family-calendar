@@ -19,7 +19,9 @@
     <div #printArea>
       <div class="legend">
         @for (person of persons(); track person.id) {
-          <div class="legend-item" [style.background-color]="person.color">
+          <div class="legend-item"
+               [style.background-color]="person.color"
+               [style.color]="textColorOn(person.color)">
             {{ person.name }}
           </div>
         }
@@ -62,6 +64,7 @@
                      [attr.aria-label]="blockLabel(block.activity)"
                      [ngStyle]="getBlockStyle(block)"
                      [style.background-color]="getPersonColor(block.activity.person)"
+                     [style.color]="textColorOn(getPersonColor(block.activity.person))"
                      (dblclick)="startEdit(block.activity)"
                      (keydown)="onBlockKeydown($event, block.activity)"
                      (focus)="onBlockFocus($event, block.activity)"

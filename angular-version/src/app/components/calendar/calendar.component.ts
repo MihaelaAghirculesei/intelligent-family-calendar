@@ -16,6 +16,7 @@ import { PdfExportService, PDF_PRINTABLE_ASPECT_RATIO } from '../../services/pdf
 import { BackupService, CalendarBackup, InvalidBackupError } from '../../services/backup.service';
 import { SaveTemplateData, WeeklyTemplate } from '../../models/template.model';
 import { HyphenatePipe } from '../../pipes/hyphenate.pipe';
+import { readableTextColor } from '../../utils/contrast';
 
 interface ActivityDetails {
   activity: Activity;
@@ -123,6 +124,11 @@ export class CalendarComponent implements OnInit {
 
   getPersonColor(person: string): string {
     return this.personService.getPersonColor(person);
+  }
+
+  // White or black, whichever stays readable on the person's color.
+  textColorOn(background: string): string {
+    return readableTextColor(background);
   }
 
   getPersonName(person: string): string {

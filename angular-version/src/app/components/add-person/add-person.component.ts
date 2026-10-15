@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, output, signal } from '@ang
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PersonData } from '../../services/person.service';
+import { readableTextColor } from '../../utils/contrast';
 
 @Component({
   selector: 'app-add-person',
@@ -108,6 +109,11 @@ export class AddPersonComponent {
 
   selectColor(color: string): void {
     this.personForm.patchValue({ color });
+  }
+
+  // The preview uses the same text color as the person's blocks will.
+  previewTextColor(): string {
+    return readableTextColor(this.personForm.get('color')?.value ?? '');
   }
 
   getFieldError(fieldName: string): string {
